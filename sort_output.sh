@@ -17,7 +17,6 @@ DIR=$(date +%Y%m%d%H%M)
 mkdir "${DIR}"
 mv full_runs ${DIR}/full_runs
 mv lost_runs ${DIR}/lost_runs
-ls | time parallel -j 2 tar -zcvf ${DIR}.tar.gz ${DIR}
+tar --use-compress-program="pigz -k -p2" -cf ${DIR}.tar.gz ${DIR}
+# -p is the number of processors to use
 rm -r ${DIR}
-
-
