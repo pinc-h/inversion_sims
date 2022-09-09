@@ -19,4 +19,3 @@ mv full_runs ${DIR}/full_runs
 mv lost_runs ${DIR}/lost_runs
 tar --use-compress-program="pigz -k -p2" -cf ${DIR}.tar.gz ${DIR}
 # -p is the number of processors to use
-rm -r ${DIR}
