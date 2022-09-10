@@ -1,8 +1,12 @@
+#!/bin/bash
+runs=$1
 mkdir data/full_runs
 mkdir data/lost_runs
 cd data
-for i in {1..100}; do
+
+for i in $(seq $runs); do
 #
+	echo $i
 	if [ -f ${i}/"${i}_lost_fitness.csv" ]; then
 		cd lost_runs
 		mv ../${i} ${i}
