@@ -6,7 +6,6 @@ cd data
 
 for i in $(seq $runs); do
 #
-	echo $i
 	if [ -f ${i}/"${i}_lost_fitness.csv" ]; then
 		cd lost_runs
 		mv ../${i} ${i}
