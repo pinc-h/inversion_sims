@@ -1,4 +1,5 @@
 #!/bin/bash
+# Runs until 100 full runs
 i=1
 j=1
 
