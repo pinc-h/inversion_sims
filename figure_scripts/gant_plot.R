@@ -1,9 +1,10 @@
 library(tidyverse)
-data <- read_delim("./data/full_runs/12/12_parsed_fitness.csv", skip = 1,col_names=F) %>% # Skips the column names (first column) and says there are no column names for this data set
+setwd("/Users/alexpinch/Documents/GitHub/inversion-model")
+data <- read_delim("./data/full_runs/69/69_parsed_fitness.csv", skip = 1,col_names=F) %>% # Skips the column names (first column) and says there are no column names for this data set
   rename(gen=X1,pop=X2)
 data <- data %>% # %>% is a pipe function
   pivot_longer(c(-gen,-pop), names_to = "sample",values_to = "fitness") # This converts this 'wide data' to tidy data
-genotypes <- read_delim("./data/full_runs/12/12_parsed_genotypes.csv",
+genotypes <- read_delim("./data/full_runs/69/69_parsed_genotypes.csv",
                         skip = 1,col_names=F) %>%
   rename(gen=X1,pop=X2)
 genotypes <- genotypes %>%
