@@ -1,7 +1,10 @@
+#!/bin/bash
+runs=$1
 mkdir data/full_runs
 mkdir data/lost_runs
 cd data
-for i in {1..100}; do
+
+for i in $(seq $runs); do
 #
 	if [ -f ${i}/"${i}_lost_fitness.csv" ]; then
 		cd lost_runs
@@ -15,9 +18,9 @@ for i in {1..100}; do
 done
 DIR=$(date +%Y%m%d%H%M)
 mkdir "${DIR}"
-mv full_runs ${DIR}/full_runs
-mv lost_runs ${DIR}/lost_runs
-ls | time parallel -j 2 tar -zcvf ${DIR}.tar.gz ${DIR}
-rm -r ${DIR}
-
-
+cp full_runs ${DIR}/full_runs
+cp lost_runs ${DIR}/lost_runs
+tar --use-compress-program="pigz -k -p2" -cf ${DIR}.tar.gz ${DIR}
+# -p is the number of processors to use
+rm -r "${DIR}"
+mv ${DIR}.tar.gz ../raw_output/${DIR}.tar.gz
