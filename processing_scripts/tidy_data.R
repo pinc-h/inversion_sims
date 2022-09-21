@@ -16,8 +16,12 @@ for (i in 1:files) {
     rename(gen=X1,pop=X2)
   genotypes <- genotypes %>%
     pivot_longer(c(-gen,-pop), names_to = "sample",values_to = "inv_genotype")
-  all_data <- data %>%
+  joined_data <- data %>%
     inner_join(genotypes)
-  write.csv(all_data,paste0(run,".csv"), row.names = FALSE)
+  write.csv(joined_data,paste0(run,".csv"), row.names = FALSE)
+  write.table(all_data, paste0(run,".csv"), sep = ",", col.names = !file.exists(paste0(run,".csv")), append = T)
 }
+all_data
+setwd("/Users/alexpinch/Documents/GitHub/inversion-model/data/processed")
+write.csv(joined_data,"all_data.csv", row.names = FALSE)
 
