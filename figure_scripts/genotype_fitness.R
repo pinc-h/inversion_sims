@@ -10,6 +10,7 @@ genotypes <- genotypes %>%
   pivot_longer(c(-gen,-pop), names_to = "sample",values_to = "inv_genotype")
 all_data <- data %>%
   inner_join(genotypes)
+
 #Fitness is reduced for inversion samples due to deleterious mutation build up
 all_data %>%
   filter(pop == "pop1") %>%
@@ -18,6 +19,7 @@ all_data %>%
                              TRUE ~ fitness)) %>%
   ggplot(.,aes(x=gen,y=fitness,color=inv_genotype,group=as.factor(inv_genotype))) +
   geom_smooth(method="loess") # As factor converts 0, 1 ,2 genotype as discrete not continuous
+
 #Allele frequency change over time
 all_data %>%
   group_by(gen,pop,inv_genotype) %>% # Lets you apply grouping functions, calculate average fitness within a subpopulation
