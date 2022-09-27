@@ -8,7 +8,7 @@ head(all_data)
 
 # Unaveraged fitness plots
 
-# A single population, fitness per genotype over time, fitness corrected for fitMod
+# Fitness vs. Genotype for Pop 1
 all_data %>%
   filter(pop == "pop1") %>%
   #Normalize the fitness based on the inversion genotype
@@ -17,15 +17,32 @@ all_data %>%
   ggplot(.,aes(x=gen,y=fitness,color=inv_genotype,group=as.factor(inv_genotype))) +
   geom_smooth(method="loess") # As factor converts 0, 1 ,2 genotype as discrete not continuous
 
-# All populations, fitness over time, fitness corrected for 
+# Fitness vs. Genotype for all populations
 all_data %>%
-  #Normalize the fitness based on the inversion genotype
-  mutate(fitness = case_when(inv_genotype == 2 ~ fitness - 0.1, # Case when is if statement in mutate, mutate is find and replace data
+  mutate(fitness = case_when(inv_genotype >= 1 ~ fitness - 0.1, # Case when is if statement in mutate, mutate is find and replace data
                              TRUE ~ fitness)) %>%
   ggplot(.,aes(x=gen,y=fitness,color=pop,group=as.factor(pop))) +
   geom_smooth(method="loess") # As factor converts 0, 1 ,2 genotype as discrete not continuous
 
-# Get all the individuals in a single population: count all the rows when sample == X+(less than or equal to 500)
+# Fitness vs. Genotype for the upper region 
+all_data %>%
+  filter(pop %in%  c("pop1", "pop5", "pop9", inv_genotype >= 1)) %>%
+  mutate(fitness = case_when(inv_genotype >= 1 ~ fitness - 0.1, # Case when is if statement in mutate, mutate is find and replace data
+                             TRUE ~ fitness)) %>%
+  ggplot(.,aes(x=gen,y=fitness,color=pop)) +
+  geom_smooth(method="loess") # As factor converts 0, 1 ,2 genotype as discrete not continuous
 
+# Average Fitness vs. Genotype for each region
+all_data %>% 
+  mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
+                                   inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
+                                   inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
+                                   inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
+                                   TRUE ~ fitness)) %>%
+  group_by(gen, pop, inv_genotype)%>%
+  summarize(mean_fitness= mean(fixed_fitness,na.rm=T)) %>%
+  ggplot(.,aes(x=gen,y=mean_fitness,group=inv_genotype,color=inv_genotype)) +
+  geom_smooth(method="loess") +
+  facet_wrap(~pop)
 
-mean(all_data$fitness)
+# How to get mean fitness over time?
