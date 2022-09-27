@@ -50,7 +50,7 @@ initialize() {
 	allIndividuals = 	(sim.subpopulations.genomes);
 	
 	//	Inversion creation
-	inverted = sample(subpops.genomes, 1); // Insert 1 homozygous copy into a random individual in the population
+	inverted = sample(p1.genomes, 1); // Insert 1 homozygous copy into a random individual in the population
 	inverted.addNewDrawnMutation(m2, invStart);
 	notInverted = setDifference(allIndividuals, inverted);
 	notInverted.addNewDrawnMutation(m3, invStart);
