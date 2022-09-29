@@ -13,6 +13,10 @@ for (i in 1:files) {
   all_data <- rbind(all_data, run_data)
 }
 
+# ========================
+# Fitness per simulation run
+# ========================
+
 #' Plot just genotype==2 and see if theres a simulation that skews the global average
 
 all_data %>%
