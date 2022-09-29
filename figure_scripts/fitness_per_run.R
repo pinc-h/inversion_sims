@@ -6,9 +6,10 @@ files <- length(list.files("/Users/alexpinch/Documents/GitHub/inversion-model/da
 full_runs <- list.files("/Users/alexpinch/Documents/GitHub/inversion-model/data/full_runs")
 for (i in 1:files) {
   run <- (full_runs[i])
+  typeof(run)
   setwd(file.path("/Users/alexpinch/Documents/GitHub/inversion-model/data/full_runs/",run))
-  run_data <- read_delim(paste0(run,".csv"),col_names=F) %>%
-    rename(gen=X1,pop=X2,sample=X3,fitness=X4,inv_genotype=X5)
+  run_data <- read.csv(file = paste(run,".csv",sep=""),skip=1,header=F) %>%
+    rename(gen=V1,pop=V2,sample=V3,fitness=V4,inv_genotype=V5)
   run_data <- run_data %>% mutate(sim_run=run)
   all_data <- rbind(all_data, run_data)
 }
