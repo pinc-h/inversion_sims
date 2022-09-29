@@ -6,7 +6,9 @@ setwd("/Users/alexpinch/Documents/GitHub/inversion-model")
 all_data <- read.csv(file = 'data/processed/all_data.csv')
 head(all_data)
 
+# ========================
 # Unaveraged fitness plots
+# ========================
 
 # Fitness vs. Genotype for Pop 1
 all_data %>%
@@ -31,6 +33,10 @@ all_data %>%
                              TRUE ~ fitness)) %>%
   ggplot(.,aes(x=gen,y=fitness,color=pop)) +
   geom_smooth(method="loess") # As factor converts 0, 1 ,2 genotype as discrete not continuous
+
+# ========================
+# Average fitness plots
+# ========================
 
 # Average Fitness vs. Genotype for each region
 all_data %>% 
