@@ -19,9 +19,8 @@ for (i in 1:files) {
   joined_data <- data %>%
     inner_join(genotypes)
   write.csv(joined_data,paste0(run,".csv"), row.names = FALSE)
-  write.table(all_data, paste0(run,".csv"), sep = ",", col.names = !file.exists(paste0(run,".csv")), append = T)
 }
-all_data
+data
 setwd("/Users/alexpinch/Documents/GitHub/inversion-model/data/processed")
 write.csv(joined_data,"all_data.csv", row.names = FALSE)
 
