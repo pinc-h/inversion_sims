@@ -32,10 +32,30 @@ all_data %>%
   geom_smooth(method="loess") +
   facet_wrap(~pop)
 
+all_data %>%
+  filter(sim_run == "69") %>%
+  mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
+                                   inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
+                                   inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
+                                   inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
+                                   TRUE ~ fitness)) %>%
+  group_by(gen, pop, inv_genotype)%>%
+  summarize(mean_fitness= mean(fixed_fitness,na.rm=T)) %>%
+  ggplot(.,aes(x=gen,y=mean_fitness,group=inv_genotype,color=inv_genotype)) +
+  geom_smooth(method="loess") +
+  facet_wrap(~pop)
 
 all_data %>%
+  filter(inv_genotype == 1) %>%
+  mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
+                                   inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
+                                   inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
+                                   inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
+                                   TRUE ~ fitness)) %>%
   group_by(gen, pop, sim_run)%>%
-  summarize(mean_fitness= mean(fitness,na.rm=T)) %>%
+  summarize(mean_fitness= mean(fixed_fitness,na.rm=T)) %>%
   ggplot(.,aes(x=gen,y=mean_fitness,group=sim_run,color=sim_run)) +
   geom_smooth(method="loess") +
   facet_wrap(~pop)
+
+
