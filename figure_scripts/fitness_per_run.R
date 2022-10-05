@@ -57,5 +57,3 @@ all_data %>%
   ggplot(.,aes(x=gen,y=mean_fitness,group=sim_run,color=sim_run)) +
   geom_smooth(method="loess") +
   facet_wrap(~pop)
-
-
