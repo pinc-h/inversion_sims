@@ -46,7 +46,7 @@ all_data %>%
   facet_wrap(~pop)
 
 all_data %>%
-  filter(inv_genotype == 1) %>%
+  filter(inv_genotype == 2) %>%
   mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
                                    inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
                                    inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
