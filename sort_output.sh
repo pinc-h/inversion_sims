@@ -1,5 +1,5 @@
 #!/bin/bash
-runs=$1
+runs=$(ls -l data/ | wc -l)
 mkdir data/full_runs
 mkdir data/lost_runs
 cd data
