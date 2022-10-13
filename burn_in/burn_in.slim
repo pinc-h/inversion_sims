@@ -9,8 +9,7 @@ initialize() {
 	defineConstant("invEnd", 750000);
 	defineConstant("simID",getSeed());
 	
-	initializeMutationRate(1e-8);
-	initializeMutationType("m1", 0.5, "f", 0.0);  // Neutral mutation
+	initializeMutationRate(1e-8);on
 	initializeMutationType("m2", 0.5, "f", 0.0);  // Inversion mutation
 	initializeMutationType("m3", 0.5, "f", 0.0); // No inversion. everyone must have this or m2
 	initializeMutationType("m4", 0, "g", -0.01, 0.2); // Deleterious mutations of varying dominance coefficients
@@ -25,7 +24,7 @@ initialize() {
 	m5.color = "orange";
 	m6.color = "red";
 	
-	initializeGenomicElementType("g1", c(m1,m4,m5,m6), c(0.99,0.01,0.01,0.01));
+	initializeGenomicElementType("g1", c(m4,m5,m6), c(0.33,0.33,0.33));
 	initializeGenomicElement(g1, 0, length-1);
 	
 	initializeRecombinationRate(1e-8);
