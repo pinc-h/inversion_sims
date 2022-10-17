@@ -9,7 +9,7 @@ initialize() {
 	defineConstant("invEnd", 750000);
 	defineConstant("simID",getSeed());
 	
-	initializeMutationRate(1e-8);on
+	initializeMutationRate(1e-8);
 	initializeMutationType("m2", 0.5, "f", 0.0);  // Inversion mutation
 	initializeMutationType("m3", 0.5, "f", 0.0); // No inversion. everyone must have this or m2
 	initializeMutationType("m4", 0, "g", -0.01, 0.2); // Deleterious mutations of varying dominance coefficients
