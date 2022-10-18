@@ -1,5 +1,5 @@
 #!/bin/bash
-i=$(ls -l data/ | wc -l)
+i=$1
 cd data
 mkdir -p ${i}
 cd ${i}
