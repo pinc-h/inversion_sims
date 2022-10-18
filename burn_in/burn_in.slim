@@ -4,7 +4,7 @@
 initialize() {
 
 	defineConstant("length", 1000000);
-	defineConstant("fitMod", 0.3);
+	defineConstant("fitMod", 0.1);
 	defineConstant("invStart", 250000);
 	defineConstant("invEnd", 750000);
 	defineConstant("simID",getSeed());
@@ -59,85 +59,6 @@ initialize() {
 		}
 }
 
-// Changing inversion fitness across regions
-// Included so that this sim can be loaded into the main model, no inversions occur in the burn in.
-
-// Upper region fitness, inversion beneficial
-fitness(m2, p1) { 
-	if (homozygous==T)
-		return 1.0 + (fitMod + mut.selectionCoeff);
-	if (homozygous==F)
-		return 1.0 + (fitMod + mut.selectionCoeff * mut.mutationType.dominanceCoeff);		
-	else
-		return 1.0 - (fitMod + mut.selectionCoeff * mut.mutationType.dominanceCoeff);
-}
-fitness(m2, p2) { 
-	if (homozygous==T)
-		return 1.0 + (fitMod + mut.selectionCoeff);
-	if (homozygous==F)
-		return 1.0 + (fitMod + mut.selectionCoeff * mut.mutationType.dominanceCoeff);		
-	else
-		return 1.0 - (fitMod + mut.selectionCoeff * mut.mutationType.dominanceCoeff);
-}
-fitness(m2, p4) { 
-	if (homozygous==T)
-		return 1.0 + (fitMod + mut.selectionCoeff);
-	if (homozygous==F)
-		return 1.0 + (fitMod + mut.selectionCoeff * mut.mutationType.dominanceCoeff);		
-	else
-		return 1.0 - (fitMod + mut.selectionCoeff * mut.mutationType.dominanceCoeff);
-}
-
-// Lower region fitness, inversion deleterious
-fitness(m2, p6) { 
-	if (homozygous==T)
-		return 1.0 - (fitMod + mut.selectionCoeff);
-	if (homozygous==F)
-		return 1.0 - (fitMod + mut.selectionCoeff * mut.mutationType.dominanceCoeff);		
-	else
-		return 1.0 + (fitMod + mut.selectionCoeff * mut.mutationType.dominanceCoeff);
-}
-fitness(m2, p8) { 
-	if (homozygous==T)
-		return 1.0 - (fitMod + mut.selectionCoeff);
-	if (homozygous==F)
-		return 1.0 - (fitMod + mut.selectionCoeff * mut.mutationType.dominanceCoeff);		
-	else
-		return 1.0 + (fitMod + mut.selectionCoeff * mut.mutationType.dominanceCoeff);
-}
-fitness(m2, p9) { 
-	if (homozygous==T)
-		return 1.0 - (fitMod + mut.selectionCoeff);
-	if (homozygous==F)
-		return 1.0 - (fitMod + mut.selectionCoeff * mut.mutationType.dominanceCoeff);		
-	else
-		return 1.0 + (fitMod + mut.selectionCoeff * mut.mutationType.dominanceCoeff);
-}
-
-
-recombination() {
-	gm1 = genome1.containsMarkerMutation(m2, invStart);
-	gm2 = genome2.containsMarkerMutation(m2, invStart);
-	if (!(gm1 | gm2)) { // Homozygote not inverted
-		return F; // If it is homozygous and not inverted, keep breakpoints where they are
-	}
-	inInv = (breakpoints > invStart) & (breakpoints <= invEnd); // If the number of breakpoints is even/outside the inversion, or inside the inversion, do not change the recombination. 
-	if (sum(inInv) % 2 == 0) { 
-		return F; // Recombination breakpoints have not changed
-	}
-	if (gm1 & gm2) { // Homozygote inverted
-		left = (breakpoints == invStart);
-		right = (breakpoints == invEnd + 1);
-		breakpoints = sort(c(breakpoints[!(left | right)],
-			c(invStart, invEnd + 1)[c(sum(left) == 0, sum(right) == 0)]));
-		return T; // Recombination breakpoints have changed
-	} 
-	else { // Heterozygote inverted: resample to get an even number of breakpoints
-		breakpoints = sim.chromosome.drawBreakpoints(individual); 
-	}
-	return T;
-}
-
 1:50000
 {
 	total_del_muts=sum(sim.subpopulations.individuals.countOfMutationsOfType(m4))+sum(sim.subpopulations.individuals.countOfMutationsOfType(m5))+sum(sim.subpopulations.individuals.countOfMutationsOfType(m6));
@@ -146,9 +67,6 @@ recombination() {
 		print("Individuals with inversion: " + asString(sum(sim.subpopulations.individuals.countOfMutationsOfType(m2))));
 		print("Total deleterious mutations: " + asString(total_del_muts));
 		
-		writeFile("./burn_in_genotypes.csv",paste(sim.generation,"pop1",p1.individuals.countOfMutationsOfType(m2),"\n"+sim.generation,"pop2",p2.individuals.countOfMutationsOfType(m2),"\n"+sim.generation,"pop3",p3.individuals.countOfMutationsOfType(m2),"\n"+sim.generation,"pop4",p4.individuals.countOfMutationsOfType(m2),"\n"+sim.generation,"pop5",p5.individuals.countOfMutationsOfType(m2),"\n"+sim.generation,"pop6",p6.individuals.countOfMutationsOfType(m2),"\n"+sim.generation,"pop7",p7.individuals.countOfMutationsOfType(m2),"\n"+sim.generation,"pop8",p8.individuals.countOfMutationsOfType(m2),"\n"+sim.generation,"pop9",p9.individuals.countOfMutationsOfType(m2)), append=T);
-		
-		writeFile("./burn_in_fitness.csv",paste(sim.generation,"pop1",p1.cachedFitness(NULL),"\n"+sim.generation,"pop2",p2.cachedFitness(NULL),"\n"+sim.generation,"pop3",p3.cachedFitness(NULL),"\n"+sim.generation,"pop4",p4.cachedFitness(NULL),"\n"+sim.generation,"pop5",p5.cachedFitness(NULL),"\n"+sim.generation,"pop6",p6.cachedFitness(NULL),"\n"+sim.generation,"pop7",p7.cachedFitness(NULL),"\n"+sim.generation,"pop8",p8.cachedFitness(NULL),"\n"+sim.generation,"pop9",p9.cachedFitness(NULL)), append=T);
 	}	
 	
 }
