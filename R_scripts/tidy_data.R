@@ -20,7 +20,7 @@ for (i in 1:files) {
     inner_join(genotypes)
   write.csv(joined_data,paste0(run,".csv"), row.names = FALSE)
 }
-data
+joined_data
 setwd("/Users/alexpinch/Documents/GitHub/inversion-model/data/processed")
-write.csv(joined_data,"all_data.csv", row.names = FALSE)
+# write.csv(joined_data,"all_data.csv", row.names = FALSE)
 
