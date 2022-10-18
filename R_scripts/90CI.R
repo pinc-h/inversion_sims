@@ -72,9 +72,28 @@ summarized_data <- all_data %>%
   group_by(gen,inv_genotype) %>%
   mutate(qnt_90 = quantile(mean_fit, 0.9),
          qnt_10 = quantile(mean_fit, 0.1),
-         mean_sim_fit = mean(mean_fit)) 
+         mean_sim_fit = quantile(mean_fit, 0.5)) ## 0.5 = median, 0.9 = mean
 
 summarized_data %>%
   ggplot(.) +
   geom_line(aes(x=gen,y=mean_sim_fit,group=inv_genotype,color=as.factor(inv_genotype))) +
   geom_ribbon(aes(x=gen,ymin=qnt_10,ymax=qnt_90,group=inv_genotype,fill=as.factor(inv_genotype)),alpha=0.2)
+## alpha = transparency
+
+## Box plots for the last generation data
+all_data %>%
+  mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
+                                   inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
+                                   inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
+                                   inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
+                                   TRUE ~ fitness)) %>%
+  filter(!is.na(inv_genotype)) %>%
+  group_by(gen, sim_run, inv_genotype) %>%
+  filter(gen == 1e5) %>%
+  group_by(gen, sim_run, inv_genotype) %>%
+  summarize(mean_fit = mean(fixed_fitness,na.rm=T)) %>%
+  ggplot(.,aes(x=as.factor(inv_genotype),y=mean_fit)) +
+  geom_boxplot()
+
+
+## group the negative fitness individuals, check if from different runs
