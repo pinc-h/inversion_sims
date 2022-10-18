@@ -80,53 +80,53 @@ initialize() {
 // upperRegion fitness, inversion is beneficial
 fitness(m2, p1) { 
 	if (homozygous==T)
-		return 1.0 + (fitMod + mut.selectionCoeff);
+		return 1.0 + (mut.selectionCoeff);
 	if (homozygous==F)
 		return 1.0 + ((fitMod + mut.selectionCoeff) * mut.mutationType.dominanceCoeff);		
 	else
-		return 1.0 - ((fitMod + mut.selectionCoeff) * mut.mutationType.dominanceCoeff);
+		return 1.0 - ((mut.selectionCoeff) * mut.mutationType.dominanceCoeff);
 }
 fitness(m2, p2) { 
 	if (homozygous==T)
-		return 1.0 + (fitMod + mut.selectionCoeff);
+		return 1.0 + (mut.selectionCoeff);
 	if (homozygous==F)
 		return 1.0 + ((fitMod + mut.selectionCoeff) * mut.mutationType.dominanceCoeff);		
 	else
-		return 1.0 - ((fitMod + mut.selectionCoeff) * mut.mutationType.dominanceCoeff);
+		return 1.0 - ((mut.selectionCoeff) * mut.mutationType.dominanceCoeff);
 }
 fitness(m2, p4) { 
 	if (homozygous==T)
-		return 1.0 + (fitMod + mut.selectionCoeff);
+		return 1.0 + (mut.selectionCoeff);
 	if (homozygous==F)
 		return 1.0 + ((fitMod + mut.selectionCoeff) * mut.mutationType.dominanceCoeff);		
 	else
-		return 1.0 - ((fitMod + mut.selectionCoeff) * mut.mutationType.dominanceCoeff);
+		return 1.0 - ((mut.selectionCoeff) * mut.mutationType.dominanceCoeff);
 }
 
 // lowerRegion fitness, inversion is deleterious
 fitness(m2, p6) { 
 	if (homozygous==T)
-		return 1.0 - (fitMod + mut.selectionCoeff);
+		return 1.0 - (mut.selectionCoeff);
 	if (homozygous==F)
 		return 1.0 - ((fitMod + mut.selectionCoeff) * mut.mutationType.dominanceCoeff);		
 	else
-		return 1.0 + ((fitMod + mut.selectionCoeff) * mut.mutationType.dominanceCoeff);
+		return 1.0 + ((mut.selectionCoeff) * mut.mutationType.dominanceCoeff);
 }
 fitness(m2, p8) { 
 	if (homozygous==T)
-		return 1.0 - (fitMod + mut.selectionCoeff);
+		return 1.0 - (mut.selectionCoeff);
 	if (homozygous==F)
 		return 1.0 - ((fitMod + mut.selectionCoeff) * mut.mutationType.dominanceCoeff);		
 	else
-		return 1.0 + ((fitMod + mut.selectionCoeff) * mut.mutationType.dominanceCoeff);
+		return 1.0 + ((mut.selectionCoeff) * mut.mutationType.dominanceCoeff);
 }
 fitness(m2, p9) { 
 	if (homozygous==T)
-		return 1.0 - (fitMod + mut.selectionCoeff);
+		return 1.0 - (mut.selectionCoeff);
 	if (homozygous==F)
 		return 1.0 - ((fitMod + mut.selectionCoeff) * mut.mutationType.dominanceCoeff);		
 	else
-		return 1.0 + ((fitMod + mut.selectionCoeff) * mut.mutationType.dominanceCoeff);
+		return 1.0 + ((mut.selectionCoeff) * mut.mutationType.dominanceCoeff);
 }
 
 
