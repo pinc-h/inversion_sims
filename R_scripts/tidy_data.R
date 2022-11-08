@@ -1,13 +1,13 @@
 library(tidyverse)
-setwd("/Users/alexpinch/Documents/GitHub/inversion-model")
-files <- length(list.files("/Users/alexpinch/Documents/GitHub/inversion-model/data/full_runs"))
+setwd("/Users/alexpinch/Documents/GitHub/inversion_model")
+files <- length(list.files("/Users/alexpinch/Documents/GitHub/inversion_model/oct20_data/full_runs"))
 cat(files)
-full_runs <- list.files("/Users/alexpinch/Documents/GitHub/inversion-model/data/full_runs")
+full_runs <- list.files("/Users/alexpinch/Documents/GitHub/inversion_model/oct20_data/full_runs")
 cat(full_runs)
 for (i in 1:files) {
   run <- (full_runs[i])
   cat(run)
-  setwd(file.path("/Users/alexpinch/Documents/GitHub/inversion-model/data/full_runs/",run))
+  setwd(file.path("/Users/alexpinch/Documents/GitHub/inversion_model/oct20_data/full_runs/",run))
   data <- read_delim(paste0(run,"_fitness.csv"),col_names=F) %>%
     rename(gen=X1,pop=X2)
   data <- data %>%
@@ -20,7 +20,7 @@ for (i in 1:files) {
     inner_join(genotypes)
   write.csv(joined_data,paste0(run,".csv"), row.names = FALSE)
 }
-joined_data
-setwd("/Users/alexpinch/Documents/GitHub/inversion-model/data/processed")
+# joined_data
+# setwd("/Users/alexpinch/Documents/GitHub/inversion_model/oct20_data/processed")
 # write.csv(joined_data,"all_data.csv", row.names = FALSE)
 
