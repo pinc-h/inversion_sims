@@ -1,7 +1,4 @@
 .DS_Store
 .Rhistory
 .Rdata
-full_runs/
-lost_runs/
-compressed_data/
 data_*/
