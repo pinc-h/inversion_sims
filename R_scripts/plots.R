@@ -2,12 +2,12 @@ library(tidyverse)
 setwd("/Users/alexpinch/Documents/GitHub/inversion_model")
 
 all_data <- tibble()
-files <- length(list.files("/Users/alexpinch/Documents/GitHub/inversion_model/oct15_data/full_runs"))
-full_runs <- list.files("/Users/alexpinch/Documents/GitHub/inversion_model/oct15_data/full_runs")
+files <- length(list.files("/Users/alexpinch/Documents/GitHub/inversion_model/data_101522/full_runs"))
+full_runs <- list.files("/Users/alexpinch/Documents/GitHub/inversion_model/data_101522/full_runs")
 for (i in 1:files) {
   run <- (full_runs[i])
   typeof(run)
-  setwd(file.path("/Users/alexpinch/Documents/GitHub/inversion_model/oct15_data/full_runs/",run))
+  setwd(file.path("/Users/alexpinch/Documents/GitHub/inversion_model/data_101522/full_runs/",run))
   run_data <- read.csv(file = paste(run,".csv",sep=""),skip=1,header=F) %>%
     rename(gen=V1,pop=V2,sample=V3,fitness=V4,inv_genotype=V5)
   run_data <- run_data %>% mutate(sim_run=run)
