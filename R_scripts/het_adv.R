@@ -72,8 +72,7 @@ all_data %>%
   ggplot(.,aes(x=as.factor(inv_genotype),y=mean_fit)) +
   geom_boxplot()
 
-# Finding problems
-all_data %>%
+all_data %>% 
   mutate(fixed_fitness = ase_when(inv_genotype == 2 ~ fitness - 0.1,
                                   inv_genotype == 1 ~ fitness - 0.5,
                                   TRUE ~ fitness)) %>%
@@ -83,3 +82,48 @@ all_data %>%
   ggplot(.,aes(x=gen,y=mean_fitness)) +
   geom_smooth(method="loess") + 
   facet_wrap(~pop)
+
+# Trying to find low fitness individuals
+all_data %>%
+  mutate(fixed_fitness = case_when(inv_genotype == 2 ~ fitness - 0.1,
+                                   inv_genotype == 1 ~ fitness - 0.05,
+                                   TRUE ~ fitness)) %>%
+  summarize(mean_fitness= mean(fixed_fitness,na.rm=T)) %>%
+  filter(mean_fitness<=0.05) %>%
+  group_by(gen, pop, sim_run)%>%
+  ggplot(.,aes(x=gen,y=mean_fitness,group=sim_run,color=sim_run)) +
+  geom_smooth(method="loess") +
+  facet_wrap(~pop)
+
+fit0_homozygotes <- all_data %>%   
+  filter(inv_genotype == 2) %>%
+  mutate(fixed_fitness = case_when(inv_genotype == 2 ~ fitness - 0.1,
+                                   inv_genotype == 1 ~ fitness - 0.05,
+                                   TRUE ~ fitness)) %>%
+  filter(fixed_fitness<=0) %>%
+  group_by(gen, pop, sim_run)%>%
+  summarize(mean_fitness= mean(fixed_fitness,na.rm=T))
+
+
+# Greg's method of finding low fitness individuals
+low_fitness_counts <- all_data %>%
+  filter(inv_genotype == 2) %>%
+  mutate(low_fitness = case_when(fitness < 0.25 ~ "low",
+                                 T ~ "high") ) %>%
+  group_by(sim_run, gen, low_fitness) %>%
+  summarize(count = n()) %>%
+  mutate(freq = count/sum(count)) 
+
+# Plotting homozygote individuals of the weird run (goes to 0 very quickly)
+all_data %>%
+  filter(sim_run == 483, inv_genotype==2) %>%
+  mutate(fixed_fitness = case_when(inv_genotype == 2 ~ fitness - 0.1,
+                                   inv_genotype == 1 ~ fitness - 0.05,
+                                   TRUE ~ fitness)) %>%
+  group_by(gen, sample, pop) %>%
+  ggplot(.,aes(x=gen, y=fixed_fitness,group=sample,color=pop)) + 
+  geom_smooth(method="loess")
+
+
+  
+  
