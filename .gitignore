@@ -3,4 +3,5 @@
 .Rdata
 full_runs/
 lost_runs/
-raw_output/
+compressed_data/
+data_*/
