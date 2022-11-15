@@ -54,9 +54,6 @@ initialize() {
 	
 	print("Individuals with inversion: " + asString(sum(subpops.individuals.countOfMutationsOfType(m2))));
 	print("Individuals without inversion: " + asString(sum(subpops.individuals.countOfMutationsOfType(m3))));
-	
-	// Saving seed
-	writeFile("./seed.txt", paste(simID));
 
 //	Migration
 	for (x in 1:metapopSide) // Arranging migration rates across the grid using x and y pointers
@@ -162,6 +159,7 @@ recombination() {
 		writeFile("./lost_fitness.csv",paste(sim.generation,"pop1",p1.cachedFitness(NULL),"\n"+sim.generation,"pop2",p2.cachedFitness(NULL),"\n"+sim.generation,"pop3",p3.cachedFitness(NULL),"\n"+sim.generation,"pop4",p4.cachedFitness(NULL),"\n"+sim.generation,"pop5",p5.cachedFitness(NULL),"\n"+sim.generation,"pop6",p6.cachedFitness(NULL),"\n"+sim.generation,"pop7",p7.cachedFitness(NULL),"\n"+sim.generation,"pop8",p8.cachedFitness(NULL),"\n"+sim.generation,"pop9",p9.cachedFitness(NULL)), append=T);
 		
 		print("Inversion lost at generation: " + asString(sim.generation));
+		writeFile("./seed.txt", paste(simID+","+sim.generation));
 		sim.simulationFinished();
 	}
 	
