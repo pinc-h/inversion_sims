@@ -13,4 +13,4 @@ for (i in 1:files) {
   all_data <- rbind(all_data, run_data)
 }
 
-ggplot(all_data, aes(x=gen))+geom_freqpoly(size=2, alpha=I(.6))
+ggplot(all_data, aes(x=gen))+geom_freqpoly(size=1, alpha=I(.6), colour="blue")
