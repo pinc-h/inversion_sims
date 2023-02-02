@@ -1,13 +1,13 @@
 library(tidyverse)
-setwd("/Users/alexpinch/Documents/GitHub/inversion_model")
+setwd("/Users/alexpinch/GitHub/inversion_model")
 
 all_data <- tibble()
-files <- length(list.files("/Users/alexpinch/Documents/GitHub/inversion_model/data_101522/full_runs"))
-full_runs <- list.files("/Users/alexpinch/Documents/GitHub/inversion_model/data_101522/full_runs")
+files <- length(list.files("/Users/alexpinch/GitHub/inversion_model/data_011223/full_runs"))
+full_runs <- list.files("/Users/alexpinch/GitHub/inversion_model/data_011223/full_runs")
 for (i in 1:files) {
   run <- (full_runs[i])
   typeof(run)
-  setwd(file.path("/Users/alexpinch/Documents/GitHub/inversion_model/data_101522/full_runs/",run))
+  setwd(file.path("/Users/alexpinch/GitHub/inversion_model/data_011223/full_runs/",run))
   run_data <- read.csv(file = paste(run,".csv",sep=""),skip=1,header=F) %>%
     rename(gen=V1,pop=V2,sample=V3,fitness=V4,inv_genotype=V5)
   run_data <- run_data %>% mutate(sim_run=run)
@@ -95,7 +95,7 @@ all_data %>%
                                    inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
                                    inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
                                    TRUE ~ fitness)) %>%
-  filter(!is.na(inv_genotype), sim_run==775) %>%
+  filter(!is.na(inv_genotype), sim_run==99) %>%
   group_by(gen, inv_genotype) %>%
   filter(gen == 5e4) %>%
   group_by(gen, sim_run, inv_genotype) %>%
@@ -115,4 +115,14 @@ all_data %>%
   summarize(mean_fitness= mean(fixed_fitness,na.rm=T)) %>%
   ggplot(.,aes(x=gen,y=mean_fitness)) +
   geom_smooth(method="loess") + 
+  facet_wrap(~pop)
+
+#Allele frequency change over time
+genotype <- as_factor(inv_genotype)
+all_data %>%
+  group_by(gen,pop,inv_genotype) %>%
+  summarize(n=n()) %>%
+  mutate(freq = n / sum(n)) %>%
+  ggplot(.,aes(x=gen,y=freq,color=genotype)) +
+  geom_line() +
   facet_wrap(~pop)
