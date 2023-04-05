@@ -2,12 +2,12 @@ library(tidyverse)
 setwd("/Users/alexpinch/GitHub/inversion_model")
 
 all_data <- tibble()
-files <- length(list.files("/Users/alexpinch/GitHub/inversion_model/data_011223/full_runs"))
-full_runs <- list.files("/Users/alexpinch/GitHub/inversion_model/data_011223/full_runs")
+files <- length(list.files("/Users/alexpinch/GitHub/inversion_model/combined_data_040323/full_runs"))
+full_runs <- list.files("/Users/alexpinch/GitHub/inversion_model/combined_data_040323/full_runs")
 for (i in 1:files) {
   run <- (full_runs[i])
   typeof(run)
-  setwd(file.path("/Users/alexpinch/GitHub/inversion_model/data_011223/full_runs/",run))
+  setwd(file.path("/Users/alexpinch/GitHub/inversion_model/combined_data_040323/full_runs",run))
   run_data <- read.csv(file = paste(run,".csv",sep=""),skip=1,header=F) %>%
     rename(gen=V1,pop=V2,sample=V3,fitness=V4,inv_genotype=V5)
   run_data <- run_data %>% mutate(sim_run=run)
@@ -123,6 +123,40 @@ all_data %>%
   group_by(gen,pop,inv_genotype) %>%
   summarize(n=n()) %>%
   mutate(freq = n / sum(n)) %>%
-  ggplot(.,aes(x=gen,y=freq,color=genotype)) +
+  ggplot(.,aes(x=gen,y=freq,color=inv_genotype)) +
   geom_line() +
   facet_wrap(~pop)
+
+
+# April changes
+genotype_counts <- data.frame(
+  homozygotes = ifelse(all_data$inv_genotype == 2, 1, 0),
+  heterozygotes = ifelse(all_data$inv_genotype == 1, 1, 0),
+  non_inverted = ifelse(all_data$inv_genotype == 0, 1, 0)
+)
+
+all_data %>%
+  filter(gen >= 100000) %>%
+  group_by(sim_run, pop, inv_genotype) %>%
+  summarize(count=n()) %>%
+  filter(!is.na(inv_genotype)) %>%
+  group_by(sim_run,pop) %>%
+  pivot_wider(names_from = inv_genotype,values_from=count)
+
+
+genotype_counts %>%
+  group_by(gen, genotype_count) %>%
+  ggplot(.,aes(y=homozygotes))
+  
+# Here, we use the ifelse function to create a new column in new_dataset for each possible value of inv_genotype (i.e., 2, 1, and 0). If inv_genotype is equal to the value we're looking for (e.g., 2 for the first column), the new column will contain a 1. If not, it will contain a 0.
+
+# Rolling average idea
+all_data %>%
+  
+  group_by(gen, genotype_count) %>%
+  filter(gen == 5e4) %>%
+  group_by(gen, sim_run, inv_genotype) %>%
+  summarize(mean_fit = mean(fixed_fitness,na.rm=T)) %>%
+  ggplot(.,aes(x=as.factor(sim_run),y=genotype_count)) +
+  geom_boxplot()
+
