@@ -2,12 +2,12 @@ library(tidyverse)
 setwd("/Users/alexpinch/GitHub/inversion_model")
 
 all_data <- tibble()
-files <- length(list.files("/Users/alexpinch/GitHub/inversion_model/combined_data_040323/full_runs"))
-full_runs <- list.files("/Users/alexpinch/GitHub/inversion_model/combined_data_040323/full_runs")
+files <- length(list.files("/Users/alexpinch/GitHub/inversion_model/data_040623/full_runs"))
+full_runs <- list.files("/Users/alexpinch/GitHub/inversion_model/data_040623/full_runs")
 for (i in 1:files) {
   run <- (full_runs[i])
   typeof(run)
-  setwd(file.path("/Users/alexpinch/GitHub/inversion_model/combined_data_040323/full_runs",run))
+  setwd(file.path("/Users/alexpinch/GitHub/inversion_model/data_040623/full_runs",run))
   run_data <- read.csv(file = paste(run,".csv",sep=""),skip=1,header=F) %>%
     rename(gen=V1,pop=V2,sample=V3,fitness=V4,inv_genotype=V5)
   run_data <- run_data %>% mutate(sim_run=run)
@@ -29,7 +29,7 @@ all_data %>%
 
 # Plotting a single run's fitness over generations
 all_data %>%
-  filter(sim_run == "775") %>%
+  filter(sim_run == "1044") %>%
   mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
                                    inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
                                    inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
@@ -46,8 +46,6 @@ all_data %>%
   filter(inv_genotype == 2) %>%
   mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
                                    inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
-                                   inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
-                                   inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
                                    TRUE ~ fitness)) %>%
   group_by(gen, pop, sim_run)%>%
   summarize(mean_fitness= mean(fixed_fitness,na.rm=T)) %>%
@@ -56,9 +54,7 @@ all_data %>%
   facet_wrap(~pop)
 all_data %>%
   filter(inv_genotype == 1) %>%
-  mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
-                                   inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
-                                   inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
+  mutate(fixed_fitness = case_when(inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
                                    inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
                                    TRUE ~ fitness)) %>%
   group_by(gen, pop, sim_run)%>%
@@ -95,7 +91,7 @@ all_data %>%
                                    inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
                                    inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
                                    TRUE ~ fitness)) %>%
-  filter(!is.na(inv_genotype), sim_run==99) %>%
+  filter(!is.na(inv_genotype), sim_run==1044) %>%
   group_by(gen, inv_genotype) %>%
   filter(gen == 5e4) %>%
   group_by(gen, sim_run, inv_genotype) %>%
