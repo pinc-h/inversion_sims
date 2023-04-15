@@ -1,5 +1,5 @@
 #!/bin/bash
-runs=$1
+runs=$(ls -l data/ | wc -l)
 mkdir data/full_runs
 mkdir data/lost_runs
 cd data
@@ -23,4 +23,3 @@ cp lost_runs ${DIR}/lost_runs
 tar --use-compress-program="pigz -k -p2" -cf ${DIR}.tar.gz ${DIR}
 # -p is the number of processors to use
 rm -r "${DIR}"
-mv ${DIR}.tar.gz ../raw_output/${DIR}.tar.gz
