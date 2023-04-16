@@ -15,6 +15,7 @@ for (i in 1:files) {
 }
 
 # Plotting all runs mean fitness over generations
+# (x axis = generations, y axis = mean fitness, grouped and coloured by run)
 all_data %>%
   mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
                                    inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
@@ -28,6 +29,7 @@ all_data %>%
   facet_wrap(~pop)
 
 # Plotting a single run's fitness over generations
+# (x axis = generations, y axis = mean fitness, grouped and coloured by genotype)
 all_data %>%
   filter(sim_run == "1044") %>%
   mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
@@ -42,10 +44,13 @@ all_data %>%
   facet_wrap(~pop)
 
 # Plotting homozygote and heterozygote fitness over generations for all runs
+# (x axis generations, y axis mean fitness, grouped and coloured by run, 1 plot for homozygotes, 1 plot for heterozygotyes)
 all_data %>%
   filter(inv_genotype == 2) %>%
   mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
                                    inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
+                                   inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
+                                   inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
                                    TRUE ~ fitness)) %>%
   group_by(gen, pop, sim_run)%>%
   summarize(mean_fitness= mean(fixed_fitness,na.rm=T)) %>%
@@ -54,7 +59,9 @@ all_data %>%
   facet_wrap(~pop)
 all_data %>%
   filter(inv_genotype == 1) %>%
-  mutate(fixed_fitness = case_when(inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
+  mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
+                                   inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
+                                   inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
                                    inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
                                    TRUE ~ fitness)) %>%
   group_by(gen, pop, sim_run)%>%
@@ -78,7 +85,7 @@ summarized_data <- all_data %>%
          qnt_10 = quantile(mean_fit, 0.1),
          mean_sim_fit = quantile(mean_fit, 0.9)) ## 0.5 = median
 
-# Plotting mean fitness (90% CI) over generations
+# Plotting mean fitness (90% CI) over generations, averaged all populations
 summarized_data %>%
   ggplot(.) +
   geom_line(aes(x=gen,y=mean_sim_fit,group=inv_genotype,color=as.factor(inv_genotype))) +
@@ -91,13 +98,13 @@ all_data %>%
                                    inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
                                    inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
                                    TRUE ~ fitness)) %>%
-  filter(!is.na(inv_genotype), sim_run==1044) %>%
-  group_by(gen, inv_genotype) %>%
-  filter(gen == 5e4) %>%
-  group_by(gen, sim_run, inv_genotype) %>%
+  filter(!is.na(inv_genotype)) %>%
+  filter(gen == 51000) %>%
+  group_by(pop, inv_genotype) %>%
   summarize(mean_fit = mean(fixed_fitness,na.rm=T)) %>%
   ggplot(.,aes(x=as.factor(inv_genotype),y=mean_fit)) +
-  geom_boxplot()
+  geom_boxplot() +
+  facet_wrap(~pop)
 
 # Plotting homozygotes of a particular run
 all_data %>%
@@ -141,7 +148,7 @@ all_data %>%
 
 
 genotype_counts %>%
-  group_by(gen, genotype_count) %>%
+  group_by() %>%
   ggplot(.,aes(y=homozygotes))
   
 # Here, we use the ifelse function to create a new column in new_dataset for each possible value of inv_genotype (i.e., 2, 1, and 0). If inv_genotype is equal to the value we're looking for (e.g., 2 for the first column), the new column will contain a 1. If not, it will contain a 0.
@@ -155,4 +162,67 @@ all_data %>%
   summarize(mean_fit = mean(fixed_fitness,na.rm=T)) %>%
   ggplot(.,aes(x=as.factor(sim_run),y=genotype_count)) +
   geom_boxplot()
+
+# April 15th 2023, making plots for EVO-WIBO
+# (want to make AVERAGE fitness plots for SPECIFIC genotypes)
+summarized_data <- all_data %>%
+  mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
+                                   inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
+                                   inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
+                                   inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
+                                   TRUE ~ fitness)) %>%
+  filter(!is.na(inv_genotype)) %>%
+  group_by(gen, sim_run, inv_genotype) %>%
+  summarize(mean_fit = mean(fixed_fitness,na.rm=T)) %>%
+  group_by(gen,inv_genotype) %>%
+  mutate(qnt_90 = quantile(mean_fit, 0.9),
+         qnt_10 = quantile(mean_fit, 0.1),
+         mean_sim_fit = quantile(mean_fit, 0.9)) ## 0.5 = median
+
+# Plotting mean fitness (90% CI) over generations
+summarized_data %>%
+  ggplot(.) +
+  geom_line(aes(x=gen,y=mean_sim_fit,group=inv_genotype,color=as.factor(inv_genotype))) +
+  geom_ribbon(aes(x=gen,ymin=qnt_10,ymax=qnt_90,group=inv_genotype,fill=as.factor(inv_genotype)),alpha=0.2) # alpha = transparency
+  
+avg_pop_data <- all_data %>%
+  mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
+                                   inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
+                                   inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
+                                   inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
+                                   TRUE ~ fitness)) %>%
+  filter(!is.na(inv_genotype)) %>%
+  group_by(gen, sim_run, inv_genotype, pop) %>%
+  summarize(mean_fit = mean(fixed_fitness,na.rm=T)) %>%
+  group_by(gen,inv_genotype, pop) %>%
+  mutate(qnt_90 = quantile(mean_fit, 0.9),
+         qnt_10 = quantile(mean_fit, 0.1),
+         mean_sim_fit = quantile(mean_fit, 0.9)) ## 0.5 = median  
+
+avg_pop_data %>%
+  ggplot(.) +
+  geom_line(aes(x=gen,y=mean_sim_fit,group=inv_genotype,color=as.factor(inv_genotype))) +
+  geom_ribbon(aes(x=gen,ymin=qnt_10,ymax=qnt_90,group=inv_genotype,fill=as.factor(inv_genotype)),alpha=0.2) + # alpha = transparency
+  facet_wrap(~pop)
+
+all_data %>%
+  mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
+                                   inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
+                                   inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
+                                   inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
+                                   TRUE ~ fitness)) %>%
+  filter(inv_genotype == 2) %>%
+  group_by(gen, pop)%>%
+  summarize(mean_fitness= mean(fixed_fitness,na.rm=T)) %>%
+  ggplot(.,aes(x=gen,y=mean_fitness,group=pop,color=pop)) +
+  geom_smooth(method="loess")
+  
+
+avg_pop_data %>%
+  filter(inv_genotype ==2) %>%
+  ggplot(.,aes(x=gen,y=mean_sim_fit,group=pop,color=pop)) +
+  geom_smooth(method="loess")
+  
+  
+
 
