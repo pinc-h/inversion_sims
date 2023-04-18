@@ -3,7 +3,7 @@ i=$1
 cd data
 mkdir ${i}
 cd ${i}
-/usr/local/bin/slim ../../model.slim
+/usr/local/bin/slim ../../la_model.slim
 for file in *.*; do
 	mv ${file} ${i}_${file}
 done
