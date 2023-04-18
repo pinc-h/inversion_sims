@@ -1,3 +1,6 @@
+# Alex Pinch, last edited April 16th 2023
+# This script is full of rough work in formatting and plotting raw output from the model
+
 library(tidyverse)
 setwd("/Users/alexpinch/GitHub/inversion_model")
 
@@ -131,13 +134,7 @@ all_data %>%
   facet_wrap(~pop)
 
 
-# April changes
-genotype_counts <- data.frame(
-  homozygotes = ifelse(all_data$inv_genotype == 2, 1, 0),
-  heterozygotes = ifelse(all_data$inv_genotype == 1, 1, 0),
-  non_inverted = ifelse(all_data$inv_genotype == 0, 1, 0)
-)
-
+# April changes, Greg's code
 all_data %>%
   filter(gen >= 100000) %>%
   group_by(sim_run, pop, inv_genotype) %>%
@@ -145,23 +142,6 @@ all_data %>%
   filter(!is.na(inv_genotype)) %>%
   group_by(sim_run,pop) %>%
   pivot_wider(names_from = inv_genotype,values_from=count)
-
-
-genotype_counts %>%
-  group_by() %>%
-  ggplot(.,aes(y=homozygotes))
-  
-# Here, we use the ifelse function to create a new column in new_dataset for each possible value of inv_genotype (i.e., 2, 1, and 0). If inv_genotype is equal to the value we're looking for (e.g., 2 for the first column), the new column will contain a 1. If not, it will contain a 0.
-
-# Rolling average idea
-all_data %>%
-  
-  group_by(gen, genotype_count) %>%
-  filter(gen == 5e4) %>%
-  group_by(gen, sim_run, inv_genotype) %>%
-  summarize(mean_fit = mean(fixed_fitness,na.rm=T)) %>%
-  ggplot(.,aes(x=as.factor(sim_run),y=genotype_count)) +
-  geom_boxplot()
 
 # April 15th 2023, making plots for EVO-WIBO
 # (want to make AVERAGE fitness plots for SPECIFIC genotypes)
