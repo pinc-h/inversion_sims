@@ -85,7 +85,7 @@ all_data %>%
   geom_smooth(method = "loess") +
   facet_wrap(~pop)
 
-# Supplementary figure: Inversion frequency over time
+# Supplementary figure: Inversion genotype frequency at the last generation
 all_data %>%
   filter(gen==1e5) %>%
   group_by(sim_run,pop,inv_genotype) %>%
@@ -93,7 +93,19 @@ all_data %>%
   mutate(freq = n / sum(n)) %>%
   ggplot(.,aes(x=inv_genotype,y=freq,group=inv_genotype,color=inv_genotype)) +
   geom_boxplot(method = "loess") +
-  facet_wrap(~pop)
-# are coding it in truly a symmetrical way? is a 10% increase the actual inverse of a 10% decrease
-# run again with no del muts, if see exactly symmetrical, then this difference is either due to deleterial load build up OR too short of a burn in
+  facet_wrap(~pop) + 
+  labs(x = "Genotype", y = "Inversion Frequency") + 
+  scale_color_continuous(name = "Inversion Genotype")
+
+# Supplementary figure: Inversion genotype frequency at the first generation
+all_data %>%
+  filter(gen==51000) %>%
+  group_by(sim_run,pop,inv_genotype) %>%
+  summarize(n=n()) %>%
+  mutate(freq = n / sum(n)) %>%
+  ggplot(.,aes(x=inv_genotype,y=freq,group=inv_genotype,color=inv_genotype)) +
+  geom_boxplot(method = "loess") +
+  facet_wrap(~pop) + 
+  labs(x = "Genotype", y = "Inversion Frequency") + 
+  scale_color_continuous(name = "Inversion Genotype")
 
