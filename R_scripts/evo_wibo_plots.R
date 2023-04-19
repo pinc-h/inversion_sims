@@ -58,7 +58,7 @@ all_data %>%
 # | Plotting supplementary figures |
 # |--------------------------------|
 # Supplementary figure: fitness over time for each population 
-# Format average fitness with subpop info
+# Format average fitness with population info
 all_data %>%
   mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
                                    inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
@@ -84,3 +84,16 @@ all_data %>%
   ggplot(.,aes(x=gen,y=freq,group=inv_genotype,color=inv_genotype)) +
   geom_smooth(method = "loess") +
   facet_wrap(~pop)
+
+# Supplementary figure: Inversion frequency over time
+all_data %>%
+  filter(gen==1e5) %>%
+  group_by(sim_run,pop,inv_genotype) %>%
+  summarize(n=n()) %>%
+  mutate(freq = n / sum(n)) %>%
+  ggplot(.,aes(x=inv_genotype,y=freq,group=inv_genotype,color=inv_genotype)) +
+  geom_boxplot(method = "loess") +
+  facet_wrap(~pop)
+# are coding it in truly a symmetrical way? is a 10% increase the actual inverse of a 10% decrease
+# run again with no del muts, if see exactly symmetrical, then this difference is either due to deleterial load build up OR too short of a burn in
+
