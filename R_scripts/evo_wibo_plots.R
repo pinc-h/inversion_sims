@@ -1,4 +1,4 @@
-# Alex Pinch, last edited April 17th 2023
+# Alex Pinch, last edited April 18th 2023
 # This script makes the plots used in my poster for EVO-WIBO 2023
 
 # Required packages
@@ -51,20 +51,26 @@ all_data %>%
 # |-------------------|
 # This figure plots average fitness of each run at 100,000 generations for each genotype.
 # Calculate average fitness at the last generation
-
+all_data %>%
+  filter(!is.na(inv_genotype), gen==1e5) %>% # Change to gen=51000 to compare to first generation
+  group_by(sim_run, inv_genotype, pop) %>%
+  summarize(mean_fit = mean(fixed_fitness,na.rm=T)) %>%
+  group_by(sim_run,inv_genotype) %>%
+  mutate(qnt_90 = quantile(mean_fit, 0.9),
+         qnt_10 = quantile(mean_fit, 0.1),
+         mean_sim_fit = quantile(mean_fit, 0.9)) %>%  ## 0.5 = median
+  ggplot(.,aes(x=inv_genotype,y=mean_sim_fit,group=inv_genotype,color=inv_genotype)) +
+  geom_boxplot() +
+  facet_wrap(~pop) + 
+  labs(x = "Genotype", y = "Mean fitness") + 
+  scale_color_continuous(name = "Inversion Genotype")
 
 
 # |--------------------------------|
 # | Plotting supplementary figures |
 # |--------------------------------|
 # Supplementary figure: fitness over time for each population 
-# Format average fitness with population info
 all_data %>%
-  mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
-                                   inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
-                                   inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
-                                   inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
-                                   TRUE ~ fitness)) %>%
   filter(!is.na(inv_genotype)) %>%
   group_by(gen, sim_run, inv_genotype, pop) %>%
   summarize(mean_fit = mean(fixed_fitness,na.rm=T)) %>%
@@ -74,7 +80,9 @@ all_data %>%
          mean_sim_fit = quantile(mean_fit, 0.9)) %>%  ## 0.5 = median
   ggplot(.,aes(x=gen,y=mean_sim_fit,group=inv_genotype,color=inv_genotype)) +
   geom_smooth(method="loess") +
-  facet_wrap(~pop)
+  facet_wrap(~pop) + 
+  labs(x = "Generations", y = "Mean fitness per population per replicate") + 
+  scale_color_continuous(name = "Inversion Genotype")
 
 # Supplementary figure: Inversion frequency over time
 all_data %>%
@@ -83,7 +91,9 @@ all_data %>%
   mutate(freq = n / sum(n)) %>%
   ggplot(.,aes(x=gen,y=freq,group=inv_genotype,color=inv_genotype)) +
   geom_smooth(method = "loess") +
-  facet_wrap(~pop)
+  facet_wrap(~pop) + 
+  labs(x = "Generations", y = "Inversion Frequency") + 
+  scale_color_continuous(name = "Inversion Genotype")
 
 # Supplementary figure: Inversion genotype frequency at the last generation
 all_data %>%
