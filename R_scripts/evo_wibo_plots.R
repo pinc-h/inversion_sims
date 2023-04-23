@@ -126,6 +126,13 @@ od_data %>%
 # |--------------------------------|
 # | Plotting supplementary figures |
 # |--------------------------------|
+
+# Supplementary figure: checking locally adaptive fitness distribution with ECDF plot
+ggplot(la_data, aes(fitness)) + stat_ecdf(geom = "point")
+
+# Supplementary figure: checking overdominant fitness distribution with ECDF plot
+ggplot(od_data, aes(fitness)) + stat_ecdf(geom = "point")
+
 # Supplementary figure: fitness over time for each population 
 la_data %>%
   filter(!is.na(inv_genotype)) %>%
