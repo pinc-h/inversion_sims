@@ -73,12 +73,10 @@ initialize() {
 
 // Heterozygote advantage
 fitness(m2) {
-        if (homozygous==T)
-                return 1.0 + (mut.selectionCoeff);
         if (homozygous==F)
                 return 1.0 + ((fitMod + mut.selectionCoeff));
         else
-                return 1.0 - ((mut.selectionCoeff) * mut.mutationType.dominanceCoeff);
+                return 1.0 + ((mut.selectionCoeff) * mut.mutationType.dominanceCoeff);
 }
 
 recombination() {
