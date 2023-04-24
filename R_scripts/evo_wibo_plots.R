@@ -117,11 +117,11 @@ od_data %>%
   mutate(qnt_90 = quantile(mean_fit, 0.9),
          qnt_10 = quantile(mean_fit, 0.1),
          mean_sim_fit = quantile(mean_fit, 0.9)) %>%  ## 0.5 = median
-  ggplot(.,aes(x=inv_genotype,y=mean_sim_fit,group=inv_genotype,color=inv_genotype)) +
+  ggplot(.,aes(x=as.factor(inv_genotype),y=mean_sim_fit,group=inv_genotype,color=as.factor(inv_genotype))) +
   geom_boxplot() + geom_jitter(width = 0.2) +
   facet_wrap(~pop) + 
   labs(x = "Genotype", y = "Mean fitness") + 
-  scale_color_continuous(name = "Inversion Genotype")
+  scale_color_discrete(name = "Inversion Genotype")
 
 # |--------------------------------|
 # | Plotting supplementary figures |
