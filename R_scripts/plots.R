@@ -1,5 +1,4 @@
-# Alex Pinch, last edited April 18th 2023
-# This script makes the plots used in my poster for EVO-WIBO 2023
+# Alex Pinch, last edited April 24th 2023
 
 # |--------------------------------|
 # | Packages & loading SLiM output |
@@ -17,10 +16,10 @@ for (i in 1:files) {
   run <- (full_runs[i])
   typeof(run)
   setwd(file.path("/Users/alexpinch/GitHub/inversion_model/data_040623/full_runs",run))
-  run_data <- read.csv(file = paste(run,".csv",sep=""),skip=1,header=F) %>%
+  la_run_data <- read.csv(file = paste(run,".csv",sep=""),skip=1,header=F) %>%
     rename(gen=V1,pop=V2,sample=V3,fitness=V4,inv_genotype=V5)
-  run_data <- run_data %>% mutate(sim_run=run)
-  la_data <- rbind(la_data, run_data)
+  la_run_data <- la_run_data %>% mutate(sim_run=run)
+  la_data <- rbind(la_data, la_run_data)
 }
 
 # Load overdominant data
@@ -33,7 +32,7 @@ for (i in 1:files) {
   setwd(file.path("/Users/alexpinch/GitHub/inversion_model/data_041823_od/full_runs",run))
   od_run_data <- read.csv(file = paste(run,".csv",sep=""),skip=1,header=F) %>%
     rename(gen=V1,pop=V2,sample=V3,fitness=V4,inv_genotype=V5)
-  od_run_data <- run_data %>% mutate(sim_run=run)
+  od_run_data <- od_run_data %>% mutate(sim_run=run)
   od_data <- rbind(od_data, od_run_data)
 }
 
@@ -47,17 +46,13 @@ la_data <- la_data %>% mutate(fixed_fitness = case_when(inv_genotype == 2 & pop 
                                              inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
                                              inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
                                              TRUE ~ fitness))
-
-# Calculate deleterious load
-la_data <- la_data %>% mutate(del_load = case_when(fixed_fitness > 0.5 ~ 1 - fixed_fitness,
-                                                   TRUE ~ fitness))
-
-# This removes the global fitness increase for all inversion-carrying heterozygotes
 od_data <- od_data %>% mutate(fixed_fitness = case_when(inv_genotype == 2 ~ fitness - 0.05,
                                                         inv_genotype == 1 ~ fitness - 0.1,
                                                         TRUE ~ fitness))
 
-# This creates a "deleterious load" variables by 
+# Calculate deleterious load
+la_data <- la_data %>% mutate(del_load = case_when(fixed_fitness > 0.5 ~ 1 - fixed_fitness,
+                                                   TRUE ~ fitness))
 od_data <- od_data %>% mutate(del_load = case_when(fixed_fitness > 0.5 ~ 1 - fixed_fitness,
                                                    TRUE ~ fitness))
 
@@ -67,7 +62,7 @@ od_data <- od_data %>% mutate(del_load = case_when(fixed_fitness > 0.5 ~ 1 - fix
 
 # Figure 1: Locally adaptive model deleterious load at 51,000 and 100k gen.
 la_data %>%
-  filter(!is.na(inv_genotype), gen==51000) %>% # Change gen=1e5 to compare to last generation
+  filter(!is.na(inv_genotype), gen==1e5, del_load < 0.5) %>% # Change gen=1e5 to compare to last generation
   group_by(sim_run, pop, inv_genotype) %>%
   summarize(mean_load = mean(del_load,na.rm=T)) %>%
   group_by(sim_run,inv_genotype) %>%
@@ -81,7 +76,7 @@ la_data %>%
 
 # Figure 2: Overdominant model deleterious load at 51,000 and 100k gen.
 od_data %>%
-  filter(!is.na(inv_genotype), gen==51000) %>% # Change gen=1e5 to compare to last generation
+  filter(!is.na(inv_genotype), gen==51000, del_load < 0.5) %>% # Change gen=1e5 to compare to last generation
   group_by(sim_run, pop, inv_genotype) %>%
   summarize(mean_load = mean(del_load,na.rm=T)) %>%
   group_by(sim_run,inv_genotype) %>%
