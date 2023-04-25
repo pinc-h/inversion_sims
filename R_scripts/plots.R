@@ -71,8 +71,10 @@ la_data %>%
          mean_sim_load = quantile(mean_load, 0.9)) %>%  ## 0.5 = median
   ggplot(.,aes(x=as.factor(inv_genotype),y=mean_sim_load,group=inv_genotype,color=as.factor(inv_genotype))) +
   geom_boxplot() + geom_jitter(width = 0.2) +
-  labs(x = "Genotype", y = "Deleterial load") + 
-  scale_color_discrete(name = "Inversion Genotype")
+  labs(x = "Genotype", y = "Deleterial load") +
+  scale_color_discrete(name = "Inversion Genotype") + 
+  ylim(0, 0.3) +
+  theme(text = element_text(size = 20)) 
 
 # Figure 2: Overdominant model deleterious load at 51,000 and 100k gen.
 od_data %>%
@@ -86,7 +88,9 @@ od_data %>%
   ggplot(.,aes(x=as.factor(inv_genotype),y=mean_sim_load,group=inv_genotype,color=as.factor(inv_genotype))) +
   geom_boxplot() + geom_jitter(width = 0.2) +
   labs(x = "Genotype", y = "Deleterial load") + 
-  scale_color_discrete(name = "Inversion Genotype")
+  scale_color_discrete(name = "Inversion Genotype") + 
+  ylim(0, 0.3) +
+  theme(text = element_text(size = 20)) 
 
 # |--------------------------------|
 # | Plotting supplementary figures |
