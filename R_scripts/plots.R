@@ -76,7 +76,7 @@ la_data %>%
 
 # Figure 2: Overdominant model deleterious load at 51,000 and 100k gen.
 od_data %>%
-  filter(!is.na(inv_genotype), gen==51000, del_load < 0.5) %>% # Change gen=1e5 to compare to last generation
+  filter(!is.na(inv_genotype), gen==1e5, del_load < 0.5) %>% # Change gen=1e5 to compare to last generation
   group_by(sim_run, pop, inv_genotype) %>%
   summarize(mean_load = mean(del_load,na.rm=T)) %>%
   group_by(sim_run,inv_genotype) %>%
