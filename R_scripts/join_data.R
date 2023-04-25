@@ -1,13 +1,13 @@
 library(tidyverse)
 setwd("/Users/alexpinch/GitHub/inversion_model")
-files <- length(list.files("/Users/alexpinch/GitHub/inversion_model/data_041823_od/full_runs"))
-full_runs <- list.files("/Users/alexpinch/GitHub/inversion_model/data_041823_od/full_runs")
+files <- length(list.files("/Users/alexpinch/GitHub/inversion_model/data_042523_od/full_runs"))
+full_runs <- list.files("/Users/alexpinch/GitHub/inversion_model/data_042523_od/full_runs")
 
 # For joining SLiM output fitness and genotype data into a single file
 for (i in 1:files) {
   run <- (full_runs[i])
   cat(run)
-  setwd(file.path("/Users/alexpinch/GitHub/inversion_model/data_041823_od/full_runs/",run))
+  setwd(file.path("/Users/alexpinch/GitHub/inversion_model/data_042523_od/full_runs/",run))
   data <- read_delim(paste0(run,"_fitness.csv"),col_names=F) %>%
     rename(gen=X1,pop=X2)
   data <- data %>%
@@ -22,6 +22,6 @@ for (i in 1:files) {
 }
 
 # For creating a single, massive file of all run data
-setwd("/Users/alexpinch/GitHub/inversion_model/data_041823_od/processed")
+setwd("/Users/alexpinch/GitHub/inversion_model/data_042523_od/processed")
 write.csv(joined_data,"all_data.csv", row.names = FALSE)
 
