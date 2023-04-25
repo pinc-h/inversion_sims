@@ -1,10 +1,16 @@
-# Alex Pinch, last edited April 16th 2023
-# This script is full of rough work in formatting and plotting raw output from the model
+# Alex Pinch, last edited April 18th 2023
+# This script makes the plots used in my poster for EVO-WIBO 2023
 
+# |--------------------------------|
+# | Packages & loading SLiM output |
+# |--------------------------------|
+
+# Required packages
 library(tidyverse)
 setwd("/Users/alexpinch/GitHub/inversion_model")
 
-all_data <- tibble()
+# Load locally adaptive data
+la_data <- tibble()
 files <- length(list.files("/Users/alexpinch/GitHub/inversion_model/data_040623/full_runs"))
 full_runs <- list.files("/Users/alexpinch/GitHub/inversion_model/data_040623/full_runs")
 for (i in 1:files) {
@@ -14,195 +20,201 @@ for (i in 1:files) {
   run_data <- read.csv(file = paste(run,".csv",sep=""),skip=1,header=F) %>%
     rename(gen=V1,pop=V2,sample=V3,fitness=V4,inv_genotype=V5)
   run_data <- run_data %>% mutate(sim_run=run)
-  all_data <- rbind(all_data, run_data)
+  la_data <- rbind(la_data, run_data)
 }
 
-# Plotting all runs mean fitness over generations
-# (x axis = generations, y axis = mean fitness, grouped and coloured by run)
-all_data %>%
-  mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
-                                   inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
-                                   inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
-                                   inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
-                                   TRUE ~ fitness)) %>%
-  group_by(gen, pop, sim_run)%>%
-  summarize(mean_fitness= mean(fixed_fitness,na.rm=T)) %>%
-  ggplot(.,aes(x=gen,y=mean_fitness,group=sim_run,color=sim_run)) +
-  geom_smooth(method="loess") +
-  facet_wrap(~pop)
+# Load overdominant data
+od_data <- tibble()
+files <- length(list.files("/Users/alexpinch/GitHub/inversion_model/data_041823_od/full_runs"))
+full_runs <- list.files("/Users/alexpinch/GitHub/inversion_model/data_041823_od/full_runs")
+for (i in 1:files) {
+  run <- (full_runs[i])
+  typeof(run)
+  setwd(file.path("/Users/alexpinch/GitHub/inversion_model/data_041823_od/full_runs",run))
+  od_run_data <- read.csv(file = paste(run,".csv",sep=""),skip=1,header=F) %>%
+    rename(gen=V1,pop=V2,sample=V3,fitness=V4,inv_genotype=V5)
+  od_run_data <- run_data %>% mutate(sim_run=run)
+  od_data <- rbind(od_data, od_run_data)
+}
 
-# Plotting a single run's fitness over generations
-# (x axis = generations, y axis = mean fitness, grouped and coloured by genotype)
-all_data %>%
-  filter(sim_run == "1044") %>%
-  mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
-                                   inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
-                                   inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
-                                   inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
-                                   TRUE ~ fitness)) %>%
-  group_by(gen, pop, inv_genotype)%>%
-  summarize(mean_fitness= mean(fixed_fitness,na.rm=T)) %>%
-  ggplot(.,aes(x=gen,y=mean_fitness,group=inv_genotype,color=inv_genotype)) +
-  geom_smooth(method="loess") +
-  facet_wrap(~pop)
+# |--------------------------------|
+# | Preliminary data formatting    |
+# |--------------------------------|
 
-# Plotting homozygote and heterozygote fitness over generations for all runs
-# (x axis generations, y axis mean fitness, grouped and coloured by run, 1 plot for homozygotes, 1 plot for heterozygotyes)
-all_data %>%
-  filter(inv_genotype == 2) %>%
-  mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
-                                   inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
-                                   inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
-                                   inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
-                                   TRUE ~ fitness)) %>%
-  group_by(gen, pop, sim_run)%>%
-  summarize(mean_fitness= mean(fixed_fitness,na.rm=T)) %>%
-  ggplot(.,aes(x=gen,y=mean_fitness,group=sim_run,color=sim_run)) +
-  geom_smooth(method="loess") +
-  facet_wrap(~pop)
-all_data %>%
-  filter(inv_genotype == 1) %>%
-  mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
-                                   inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
-                                   inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
-                                   inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
-                                   TRUE ~ fitness)) %>%
-  group_by(gen, pop, sim_run)%>%
-  summarize(mean_fitness= mean(fixed_fitness,na.rm=T)) %>%
-  ggplot(.,aes(x=gen,y=mean_fitness,group=sim_run,color=sim_run)) +
-  geom_smooth(method="loess") +
-  facet_wrap(~pop)
+# This removes the strict fitness changes coded in the SLiM model, this way we can assess fitness changes to look for build-up of deleterious mutations
+la_data <- la_data %>% mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
+                                             inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
+                                             inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
+                                             inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
+                                             TRUE ~ fitness))
 
-# Creating fixed mean fitness with 90% CI
-summarized_data <- all_data %>%
-  mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
-                                   inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
-                                   inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
-                                   inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
-                                   TRUE ~ fitness)) %>%
-  filter(!is.na(inv_genotype)) %>%
-  group_by(gen, sim_run, inv_genotype) %>%
-  summarize(mean_fit = mean(fixed_fitness,na.rm=T)) %>%
-  group_by(gen,inv_genotype) %>%
-  mutate(qnt_90 = quantile(mean_fit, 0.9),
-         qnt_10 = quantile(mean_fit, 0.1),
-         mean_sim_fit = quantile(mean_fit, 0.9)) ## 0.5 = median
+# Calculate deleterious load
+la_data <- la_data %>% mutate(del_load = case_when(fixed_fitness > 0.5 ~ 1 - fixed_fitness,
+                                                   TRUE ~ fitness))
 
-# Plotting mean fitness (90% CI) over generations, averaged all populations
-summarized_data %>%
-  ggplot(.) +
-  geom_line(aes(x=gen,y=mean_sim_fit,group=inv_genotype,color=as.factor(inv_genotype))) +
-  geom_ribbon(aes(x=gen,ymin=qnt_10,ymax=qnt_90,group=inv_genotype,fill=as.factor(inv_genotype)),alpha=0.2) # alpha = transparency
+# This removes the global fitness increase for all inversion-carrying heterozygotes
+od_data <- od_data %>% mutate(fixed_fitness = case_when(inv_genotype == 2 ~ fitness - 0.05,
+                                                        inv_genotype == 1 ~ fitness - 0.1,
+                                                        TRUE ~ fitness))
 
-# Box plots of genotype vs. fitness of the last generation
-all_data %>%
-  mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
-                                   inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
-                                   inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
-                                   inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
-                                   TRUE ~ fitness)) %>%
-  filter(!is.na(inv_genotype)) %>%
-  filter(gen == 51000) %>%
-  group_by(pop, inv_genotype) %>%
-  summarize(mean_fit = mean(fixed_fitness,na.rm=T)) %>%
-  ggplot(.,aes(x=as.factor(inv_genotype),y=mean_fit)) +
-  geom_boxplot() +
-  facet_wrap(~pop)
+# This creates a "deleterious load" variables by 
+od_data <- od_data %>% mutate(del_load = case_when(fixed_fitness > 0.5 ~ 1 - fixed_fitness,
+                                                   TRUE ~ fitness))
 
-# Plotting homozygotes of a particular run
-all_data %>%
-  mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
-                                   inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
-                                   inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
-                                   inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
-                                   TRUE ~ fitness)) %>%
-  filter(inv_genotype==2, sim_run==914) %>%
-  group_by(gen, pop, sim_run)%>%
-  summarize(mean_fitness= mean(fixed_fitness,na.rm=T)) %>%
-  ggplot(.,aes(x=gen,y=mean_fitness)) +
-  geom_smooth(method="loess") + 
-  facet_wrap(~pop)
+# |-------------------|
+# | Figures           |
+# |-------------------|
 
-#Allele frequency change over time
-genotype <- as_factor(inv_genotype)
-all_data %>%
-  group_by(gen,pop,inv_genotype) %>%
-  summarize(n=n()) %>%
-  mutate(freq = n / sum(n)) %>%
-  ggplot(.,aes(x=gen,y=freq,color=inv_genotype)) +
-  geom_line() +
-  facet_wrap(~pop)
-
-
-# April changes, Greg's code
-all_data %>%
-  filter(gen >= 100000) %>%
+# Figure 1: Locally adaptive model deleterious load at 51,000 and 100k gen.
+la_data %>%
+  filter(!is.na(inv_genotype), gen==51000) %>% # Change gen=1e5 to compare to last generation
   group_by(sim_run, pop, inv_genotype) %>%
-  summarize(count=n()) %>%
-  filter(!is.na(inv_genotype)) %>%
-  group_by(sim_run,pop) %>%
-  pivot_wider(names_from = inv_genotype,values_from=count)
+  summarize(mean_load = mean(del_load,na.rm=T)) %>%
+  group_by(sim_run,inv_genotype) %>%
+  mutate(qnt_90 = quantile(mean_load, 0.9),
+         qnt_10 = quantile(mean_load, 0.1),
+         mean_sim_load = quantile(mean_load, 0.9)) %>%  ## 0.5 = median
+  ggplot(.,aes(x=as.factor(inv_genotype),y=mean_sim_load,group=inv_genotype,color=as.factor(inv_genotype))) +
+  geom_boxplot() + geom_jitter(width = 0.2) +
+  labs(x = "Genotype", y = "Deleterial load") + 
+  scale_color_discrete(name = "Inversion Genotype")
 
-# April 15th 2023, making plots for EVO-WIBO
-# (want to make AVERAGE fitness plots for SPECIFIC genotypes)
-summarized_data <- all_data %>%
-  mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
-                                   inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
-                                   inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
-                                   inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
-                                   TRUE ~ fitness)) %>%
+# Figure 2: Overdominant model deleterious load at 51,000 and 100k gen.
+od_data %>%
+  filter(!is.na(inv_genotype), gen==51000) %>% # Change gen=1e5 to compare to last generation
+  group_by(sim_run, pop, inv_genotype) %>%
+  summarize(mean_load = mean(del_load,na.rm=T)) %>%
+  group_by(sim_run,inv_genotype) %>%
+  mutate(qnt_90 = quantile(mean_load, 0.9),
+         qnt_10 = quantile(mean_load, 0.1),
+         mean_sim_load = quantile(mean_load, 0.9)) %>%  ## 0.5 = median
+  ggplot(.,aes(x=as.factor(inv_genotype),y=mean_sim_load,group=inv_genotype,color=as.factor(inv_genotype))) +
+  geom_boxplot() + geom_jitter(width = 0.2) +
+  labs(x = "Genotype", y = "Deleterial load") + 
+  scale_color_discrete(name = "Inversion Genotype")
+
+# |--------------------------------|
+# | Plotting supplementary figures |
+# |--------------------------------|
+
+# Supplementary figure: checking locally adaptive fitness distribution with ECDF plot
+ggplot(la_data, aes(fitness)) + stat_ecdf(geom = "point")
+
+# Supplementary figure: checking overdominant fitness distribution with ECDF plot
+ggplot(od_data, aes(fitness)) + stat_ecdf(geom = "point")
+
+# Supplementary figure: la model, fitness over time
+# Format average fitness 
+la_data %>%
   filter(!is.na(inv_genotype)) %>%
   group_by(gen, sim_run, inv_genotype) %>%
   summarize(mean_fit = mean(fixed_fitness,na.rm=T)) %>%
   group_by(gen,inv_genotype) %>%
   mutate(qnt_90 = quantile(mean_fit, 0.9),
          qnt_10 = quantile(mean_fit, 0.1),
-         mean_sim_fit = quantile(mean_fit, 0.9)) ## 0.5 = median
-
-# Plotting mean fitness (90% CI) over generations
-summarized_data %>%
+         mean_sim_fit = quantile(mean_fit, 0.9)) %>% ## Can change to 0.5 for the median
   ggplot(.) +
   geom_line(aes(x=gen,y=mean_sim_fit,group=inv_genotype,color=as.factor(inv_genotype))) +
-  geom_ribbon(aes(x=gen,ymin=qnt_10,ymax=qnt_90,group=inv_genotype,fill=as.factor(inv_genotype)),alpha=0.2) # alpha = transparency
-  
-avg_pop_data <- all_data %>%
-  mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
-                                   inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
-                                   inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
-                                   inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
-                                   TRUE ~ fitness)) %>%
+  geom_ribbon(aes(x=gen,ymin=qnt_10,ymax=qnt_90,group=inv_genotype,fill=as.factor(inv_genotype)),alpha=0.2) +  # alpha = transparency
+  labs(x = "Generations", y = "Fitness") + 
+  scale_color_discrete(name = "Inversion Genotype") + # Generates a second legend with a readable title
+  guides(fill = "none") # Removes the original unreadable legend
+
+# Supplementary figure: od model, fitness over time 
+# Format average fitness
+od_data %>%
+  filter(!is.na(inv_genotype)) %>%
+  group_by(gen, sim_run, inv_genotype) %>%
+  summarize(mean_fit = mean(fixed_fitness,na.rm=T)) %>%
+  group_by(gen,inv_genotype) %>%
+  mutate(qnt_90 = quantile(mean_fit, 0.9),
+         qnt_10 = quantile(mean_fit, 0.1),
+         mean_sim_fit = quantile(mean_fit, 0.9)) %>% ## Can change to 0.5 for the median
+  ggplot(.) +
+  geom_line(aes(x=gen,y=mean_sim_fit,group=inv_genotype,color=as.factor(inv_genotype))) +
+  geom_ribbon(aes(x=gen,ymin=qnt_10,ymax=qnt_90,group=inv_genotype,fill=as.factor(inv_genotype)),alpha=0.2) +  # alpha = transparency
+  labs(x = "Generations", y = "Fitness") + 
+  scale_color_discrete(name = "Inversion Genotype") + # Generates a second legend with a readable title
+  guides(fill = "none") # Removes the original unreadable legend
+
+# Supplementary figure: od model, genotype fitness at 100k gen. 
+# Calculate average fitness at the last generation
+od_data %>%
+  filter(!is.na(inv_genotype), gen==1e5) %>% # Change to gen=51000 to compare to first generation
+  group_by(sim_run, pop, inv_genotype) %>%
+  summarize(mean_fit = mean(fixed_fitness,na.rm=T)) %>%
+  group_by(sim_run,inv_genotype) %>%
+  mutate(qnt_90 = quantile(mean_fit, 0.9),
+         qnt_10 = quantile(mean_fit, 0.1),
+         mean_sim_fit = quantile(mean_fit, 0.9)) %>%  ## 0.5 = median
+  ggplot(.,aes(x=as.factor(inv_genotype),y=mean_sim_fit,group=inv_genotype,color=as.factor(inv_genotype))) +
+  geom_boxplot() + geom_jitter(width = 0.2) +
+  labs(x = "Genotype", y = "Mean fitness") + 
+  scale_color_discrete(name = "Inversion Genotype")
+
+# Supplementary figure: la model, genotype fitness at 100k gen.
+la_data %>%
+  filter(!is.na(inv_genotype), gen==1e5, fixed_fitness > 0.5) %>% # Change to gen=51000 to compare to first generation, removes outliers
+  group_by(sim_run, pop, inv_genotype) %>%
+  summarize(mean_fit = mean(fixed_fitness,na.rm=T)) %>%
+  group_by(sim_run,inv_genotype) %>%
+  mutate(qnt_90 = quantile(mean_fit, 0.9),
+         qnt_10 = quantile(mean_fit, 0.1),
+         mean_sim_fit = quantile(mean_fit, 0.9)) %>%  ## 0.5 = median
+  ggplot(.,aes(x=as.factor(inv_genotype),y=mean_sim_fit,group=inv_genotype,color=as.factor(inv_genotype))) +
+  geom_boxplot() + geom_jitter(width = 0.2) +
+  labs(x = "Genotype", y = "Mean fitness") + 
+  scale_color_discrete(name = "Inversion Genotype")
+
+# Supplementary figure: fitness over time for each population 
+la_data %>%
   filter(!is.na(inv_genotype)) %>%
   group_by(gen, sim_run, inv_genotype, pop) %>%
   summarize(mean_fit = mean(fixed_fitness,na.rm=T)) %>%
   group_by(gen,inv_genotype, pop) %>%
   mutate(qnt_90 = quantile(mean_fit, 0.9),
          qnt_10 = quantile(mean_fit, 0.1),
-         mean_sim_fit = quantile(mean_fit, 0.9)) ## 0.5 = median  
+         mean_sim_fit = quantile(mean_fit, 0.9)) %>%  ## 0.5 = median
+  ggplot(.,aes(x=gen,y=mean_sim_fit,group=inv_genotype,color=inv_genotype)) +
+  geom_smooth(method="loess") +
+  facet_wrap(~pop) + 
+  labs(x = "Generations", y = "Mean fitness per population per replicate") + 
+  scale_color_continuous(name = "Inversion Genotype")
 
-avg_pop_data %>%
-  ggplot(.) +
-  geom_line(aes(x=gen,y=mean_sim_fit,group=inv_genotype,color=as.factor(inv_genotype))) +
-  geom_ribbon(aes(x=gen,ymin=qnt_10,ymax=qnt_90,group=inv_genotype,fill=as.factor(inv_genotype)),alpha=0.2) + # alpha = transparency
-  facet_wrap(~pop)
+# Supplementary figure: Inversion frequency over time
+la_data %>%
+  group_by(gen,pop,inv_genotype) %>%
+  summarize(n=n()) %>%
+  mutate(freq = n / sum(n)) %>%
+  ggplot(.,aes(x=gen,y=freq,group=inv_genotype,color=inv_genotype)) +
+  geom_smooth(method = "loess") +
+  facet_wrap(~pop) + 
+  labs(x = "Generations", y = "Inversion Frequency") + 
+  scale_color_continuous(name = "Inversion Genotype")
 
-all_data %>%
-  mutate(fixed_fitness = case_when(inv_genotype == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.1,
-                                   inv_genotype == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.1,
-                                   inv_genotype == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
-                                   inv_genotype == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
-                                   TRUE ~ fitness)) %>%
-  filter(inv_genotype == 2) %>%
-  group_by(gen, pop)%>%
-  summarize(mean_fitness= mean(fixed_fitness,na.rm=T)) %>%
-  ggplot(.,aes(x=gen,y=mean_fitness,group=pop,color=pop)) +
-  geom_smooth(method="loess")
-  
+# Supplementary figure: Inversion genotype frequency at the last generation
+la_data %>%
+  filter(gen==1e5) %>%
+  group_by(sim_run,pop,inv_genotype) %>%
+  summarize(n=n()) %>%
+  mutate(freq = n / sum(n)) %>%
+  ggplot(.,aes(x=inv_genotype,y=freq,group=inv_genotype,color=inv_genotype)) +
+  geom_boxplot(method = "loess") +
+  facet_wrap(~pop) + 
+  labs(x = "Genotype", y = "Inversion Frequency") + 
+  scale_color_continuous(name = "Inversion Genotype")
 
-avg_pop_data %>%
-  filter(inv_genotype ==2) %>%
-  ggplot(.,aes(x=gen,y=mean_sim_fit,group=pop,color=pop)) +
-  geom_smooth(method="loess")
-  
-  
+# Supplementary figure: Inversion genotype frequency at the first generation
+la_data %>%
+  filter(gen==51000) %>%
+  group_by(sim_run,pop,inv_genotype) %>%
+  summarize(n=n()) %>%
+  mutate(freq = n / sum(n)) %>%
+  ggplot(.,aes(x=inv_genotype,y=freq,group=inv_genotype,color=inv_genotype)) +
+  geom_boxplot(method = "loess") +
+  facet_wrap(~pop) + 
+  labs(x = "Genotype", y = "Inversion Frequency") + 
+  scale_color_continuous(name = "Inversion Genotype")
 
 
+# REVISED PLOTS!! APRIL 24th very last minute oh my god
