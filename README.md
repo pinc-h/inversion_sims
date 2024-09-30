@@ -1,7 +1,7 @@
 # README  
-## How to run the model (Methods)
+## How to run the simulations (Methods)
 
-## Results from the model (Results)
+## Results from the simulations (Results)
 
 ## Interpreting results (Discussion)
 
