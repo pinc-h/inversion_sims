@@ -3,6 +3,7 @@
 
 initialize() {
 	defineConstant("L", 1000000);
+	defineConstant("FITMOD", 0.05);
 	defineConstant("INV_LENGTH", 500000);
 	defineConstant("INV_START", asInteger(L/2 - INV_LENGTH/2));
 	defineConstant("INV_END", INV_START + INV_LENGTH - 1);
@@ -29,14 +30,17 @@ initialize() {
 	inverted.addNewDrawnMutation(m3, INV_END);
 }
 
-mutationEffect(m2) {
-	// fitness of the inversion is frequency-dependent
-	f = sim.mutationFrequencies(NULL, mut);
-	return 1.0 - (f - 0.5) * 0.2;
+2:5000 early() {
+	if (sim.countOfMutationsOfType(m2)==0)
+	{
+		sim.outputFull("./full_output.txt");
+		sim.simulationFinished();
+	}
 }
 
 5000 late() {
-	sim.outputFixedMutations();
+	sim.outputFixedMutations("./fixed_muts_output.txt");
+	sim.outputFull("./full_output.txt");
 	
 	// Assess fixation inside vs. outside the inversion
 	pos = sim.substitutions.position;
