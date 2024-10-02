@@ -21,21 +21,13 @@ initialize() {
 	initializeRecombinationRate(1e-8);
 }
 
-1 late() {
+1 early() {
 	sim.addSubpop("p1", N);
 
 	// give some genomes an inversion
 	inverted = sample(p1.genomes, 100);
 	inverted.addNewDrawnMutation(m2, INV_START);
 	inverted.addNewDrawnMutation(m3, INV_END);
-}
-
-2:5000 early() {
-	if (sim.countOfMutationsOfType(m2)==0)
-	{
-		sim.outputFull("./full_output.txt");
-		sim.simulationFinished();
-	}
 }
 
 5000 late() {
