@@ -21,6 +21,18 @@ initialize() {
 	initializeRecombinationRate(1e-8);
 }
 
+mutationEffect(m2) {
+	f = sim.mutationFrequencies(NULL, mut); // fitness of the inversion is frequency dependent
+	catn(sim.mutationFrequencies(NULL, mut));
+	return 1.0 + (f - 0.5 + FITMOD) * 0.2;
+	//if (homozygous==F)
+	//	return 1.0 + (f - 0.5 + FITMOD) * 0.2;
+	//else
+	//	return 1.0 - (f - 0.5) * 0.2;
+	// fitness of the inversion is frequency-dependent
+	
+}
+
 1 early() {
 	sim.addSubpop("p1", N);
 
