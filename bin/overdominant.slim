@@ -1,3 +1,5 @@
+// DOES NOT RUN
+
 // Amended from Recipe 14.4, Sept 30 2024
 // Alex Pinch
 
@@ -9,6 +11,7 @@ initialize() {
 	defineConstant("INV_END", INV_START + INV_LENGTH - 1);
 	defineConstant("N", 500);
 	
+
 	initializeMutationRate(1e-7);
 	initializeMutationType("m1", 0.5, "f", 0.0);  // neutral sites
 	initializeMutationType("m2", 0.5, "f", 0.0);  // start marker
@@ -19,18 +22,18 @@ initialize() {
 	initializeGenomicElementType("g1", m1, 1.0);
 	initializeGenomicElement(g1, 0, L-1);
 	initializeRecombinationRate(1e-8);
+
 }
 
 mutationEffect(m2) {
 	// fitness of the inversion is frequency-dependent
 	f = sim.mutationFrequencies(NULL, mut);
-	return 1.0 - (f - 0.5) * 0.2;
+	// return 1.0 - (f - 0.5) * 0.2;
 	
-	//if (homozygous==F)
-	//	return 1.0 + (f - 0.5 + FITMOD) * 0.2;
-	//else
-	//	return 1.0 - (f - 0.5) * 0.2;
-	// fitness of the inversion is frequency-dependent
+	if (homozygous==F)
+		return 1.0 + (f + FITMOD) * 0.2;
+	else
+		return 1.0 - (f - 0.5) * 0.2;
 	
 }
 
@@ -41,6 +44,7 @@ mutationEffect(m2) {
 	inverted = sample(p1.genomes, 100);
 	inverted.addNewDrawnMutation(m2, INV_START);
 	inverted.addNewDrawnMutation(m3, INV_END);
+	
 }
 
 5000 late() {
@@ -52,6 +56,11 @@ mutationEffect(m2) {
 	catn(sum((pos >= INV_START) & (pos < INV_END)) + " inside.");
 	catn(sum((pos < INV_START) | (pos >= INV_END)) + " outside.");
 }
+
+// THE NEW FITNESS FUNCTION IN v.4:
+//fitnessEffect() {
+
+//}
 
 recombination() {
 	gm1 = genome1.containsMarkerMutation(m2, INV_START);

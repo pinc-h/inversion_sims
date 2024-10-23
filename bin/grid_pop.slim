@@ -1,0 +1,108 @@
+// DOES NOT RUN
+
+// Amended from Recipe 14.4, Sept 30 2024
+// Alex Pinch
+
+
+initialize() {
+	defineConstant("L", 1000000);
+	defineConstant("FITMOD", 0.05);
+	defineConstant("INV_LENGTH", 500000);
+	defineConstant("INV_START", asInteger(L/2 - INV_LENGTH/2));
+	defineConstant("INV_END", INV_START + INV_LENGTH - 1);
+	defineConstant("N", 500);
+	
+
+	initializeMutationRate(1e-7);
+	initializeMutationType("m1", 0.5, "f", 0.0);  // neutral sites
+	initializeMutationType("m2", 0.5, "f", 0.0);  // start marker
+	initializeMutationType("m3", 0.5, "f", 0.0);  // end marker
+	c(m2,m3).convertToSubstitution = T;
+	c(m2,m3).color = "red";
+	
+	initializeGenomicElementType("g1", m1, 1.0);
+	initializeGenomicElement(g1, 0, L-1);
+	initializeRecombinationRate(1e-8);
+
+}
+
+mutationEffect(m2) {
+	// fitness of the inversion is frequency-dependent
+	f = sim.mutationFrequencies(NULL, mut);
+	// return 1.0 - (f - 0.5) * 0.2;
+	
+	if (homozygous==F)
+		return 1.0 + (f + FITMOD) * 0.2;
+	else
+		return 1.0 - (f - 0.5) * 0.2;
+	
+}
+
+1 early() {
+
+	metapopSide = 3;
+	metapopSize = metapopSide * metapopSide;
+	for (i in 1:metapopSize)
+		sim.addSubpop(i, 500);
+	subpops = sim.subpopulations;
+
+//	Migration
+	for (x in 1:metapopSide) // Arranging migration rates across the grid using x and y pointers
+		for (y in 1:metapopSide)
+		{
+			destID = (x - 1) + (y - 1) * metapopSide + 1;
+			destSubpop = subpops[destID - 1];
+			if (x > 1)   // Left to right migration
+				destSubpop.setMigrationRates(destID - 1, 0.01);
+			if (x < metapopSide)   // Right to left migration
+				destSubpop.setMigrationRates(destID + 1, 0.01);
+			if (y > 1)   // Top to bottom migration
+				destSubpop.setMigrationRates(destID - metapopSide, 0.01);
+			if (y < metapopSide)   // Bottom to top migration
+				destSubpop.setMigrationRates(destID + metapopSide, 0.01);
+		}
+	
+	//     Population grid setup/subpop creation
+	metapopSide = 3;
+	metapopSize = metapopSide * metapopSide;
+	subpops = sim.subpopulations;
+	allIndividuals = (sim.subpopulations.genomes);
+	
+	
+}
+
+50000 late() {
+	sim.outputFixedMutations("./fixed_muts_output.txt");
+	sim.outputFull("./full_output.txt");
+	
+	// Assess fixation inside vs. outside the inversion
+	pos = sim.substitutions.position;
+	catn(sum((pos >= INV_START) & (pos < INV_END)) + " inside.");
+	catn(sum((pos < INV_START) | (pos >= INV_END)) + " outside.");
+}
+
+recombination() {
+	gm1 = genome1.containsMarkerMutation(m2, INV_START);
+	gm2 = genome2.containsMarkerMutation(m2, INV_START);
+	if (!(gm1 | gm2)) {
+		// homozygote non-inverted
+		return F;
+	}
+	inInv = (breakpoints > INV_START) & (breakpoints <= INV_END);
+	if (sum(inInv) % 2 == 0) {
+		return F;
+	}
+	if (gm1 & gm2) {
+		// homozygote inverted
+		left = (breakpoints == INV_START);
+		right = (breakpoints == INV_END + 1);
+		breakpoints = sort(c(breakpoints[!(left | right)],
+			c(INV_START, INV_END + 1)[c(sum(left) == 0, sum(right) == 0)]));
+		return T;
+	} else {
+		// heterozygote inverted: resample to get an even number of breakpoints
+		// this is *recursive*: it calls this recombination callback again!
+		breakpoints = sim.chromosome.drawBreakpoints(individual);
+	}
+	return T;
+}
