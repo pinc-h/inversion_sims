@@ -24,7 +24,7 @@ initialize() {
 
 }
 
-1 early(){
+1 first(){
 
 //	Population grid setup/subpop creation
 	metapopSide = 3;
@@ -52,17 +52,14 @@ initialize() {
 		}
 }
 
-100000 late()
-{
+1:99999 early () {
+if (sim.cycle % 1000 == 0) {
+writeFile("./burn_in_fitness.csv",paste(sim.cycle,"pop1",p1.cachedFitness(NULL),"\n"+sim.cycle,"pop2",p2.cachedFitness(NULL),"\n"+sim.cycle,"pop3",p3.cachedFitness(NULL),"\n"+sim.cycle,"pop4",p4.cachedFitness(NULL),"\n"+sim.cycle,"pop5",p5.cachedFitness(NULL),"\n"+sim.cycle,"pop6",p6.cachedFitness(NULL),"\n"+sim.cycle,"pop7",p7.cachedFitness(NULL),"\n"+sim.cycle,"pop8",p8.cachedFitness(NULL),"\n"+sim.cycle,"pop9",p9.cachedFitness(NULL)), append=T);
+}	
 
-/* FIX THIS SO THAT IT OUTPUTS THE TOTAL DEL MUTS IN A TEXT FILE:
-	total_del_muts=sum(sim.subpopulations.individuals.countOfMutationsOfType(m4))+sum(sim.subpopulations.individuals.countOfMutationsOfType(m5))+sum(sim.subpopulations.individuals.countOfMutationsOfType(m6));
-	if (sim.generation % 1000 == 0) {
-		print("Burn in running, Generation " + asString(sim.generation));
-		print("Individuals with inversion: " + asString(sum(sim.subpopulations.individuals.countOfMutationsOfType(m2))));
-		print("Total deleterious mutations: " + asString(total_del_muts));
-	*/	
-	}	
+}
+
+100000 late() {
 	sim.outputFull("./burn_in.txt");
 	sim.simulationFinished(); 
 }

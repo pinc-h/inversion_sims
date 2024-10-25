@@ -13,6 +13,7 @@ initialize() {
 	
 
 	initializeMutationRate(1e-7);
+	// if dominance coefficient is = 0.5, then the fitness of the heterozygote is exactly intermediate between the two homozygotes
 	initializeMutationType("m1", 0.5, "f", 0.0);  // neutral sites
 	initializeMutationType("m2", 0.5, "f", 0.0);  // start marker
 	initializeMutationType("m3", 0.5, "f", 0.0);  // end marker
@@ -25,21 +26,107 @@ initialize() {
 
 }
 
-mutationEffect(m2) {
-	// fitness of the inversion is frequency-dependent
-	f = sim.mutationFrequencies(NULL, mut);
-	return 1.0 - (f - 0.5) * 0.2;
-	
-	/*if (homozygous==F)
+/* fitnessEffect(p1) {
+	if (homozygous==F)
 		return 1.0 + (f + FITMOD) * 0.2;
 	else
-		return 1.0 - (f - 0.5) * 0.2; */
-	
+		return 1.0 - (f - 0.5) * 0.2;
+} */
+
+fitnessEffect(p1) {
+	is_inverted = F;
+	if (individual.genome1.countOfMutationsOfType(m2) |individual.genome2.countOfMutationsOfType(m2))
+		is_inverted=T;
+	else
+		is_inverted=F;
+
+	if (is_inverted == T) {
+		return 1.0 + (FITMOD);
+	} 
+	else {
+		return 1.0;
+	}
 }
 
-100000 early() {
+fitnessEffect(p2) {
+	is_inverted = F;
+	if (individual.genome1.countOfMutationsOfType(m2) |individual.genome2.countOfMutationsOfType(m2))
+		is_inverted=T;
+	else
+		is_inverted=F;
 
-        sim.readFromPopulationFile("../../burn_in/burn_in.txt");
+	if (is_inverted == T) {
+		return 1.0 + (FITMOD);
+	} 
+	else {
+		return 1.0;
+	}
+}
+
+fitnessEffect(p3) {
+	is_inverted = F;
+	if (individual.genome1.countOfMutationsOfType(m2) |individual.genome2.countOfMutationsOfType(m2))
+		is_inverted=T;
+	else
+		is_inverted=F;
+
+	if (is_inverted == T) {
+		return 1.0 + (FITMOD);
+	} 
+	else {
+		return 1.0;
+	}
+}
+
+fitnessEffect(p7) {
+	is_inverted = F;
+	if (individual.genome1.countOfMutationsOfType(m2) |individual.genome2.countOfMutationsOfType(m2))
+		is_inverted=T;
+	else
+		is_inverted=F;
+
+	if (is_inverted == T) {
+		return 1.0 - (FITMOD);
+	} 
+	else {
+		return 1.0;
+	}
+}
+
+fitnessEffect(p8) {
+	is_inverted = F;
+	if (individual.genome1.countOfMutationsOfType(m2) |individual.genome2.countOfMutationsOfType(m2))
+		is_inverted=T;
+	else
+		is_inverted=F;
+
+	if (is_inverted == T) {
+		return 1.0 - (FITMOD);
+	} 
+	else {
+		return 1.0;
+	}
+}
+
+fitnessEffect(p9) {
+	is_inverted = F;
+	if (individual.genome1.countOfMutationsOfType(m2) |individual.genome2.countOfMutationsOfType(m2))
+		is_inverted=T;
+	else
+		is_inverted=F;
+
+	if (is_inverted == T) {
+		return 1.0 - (FITMOD);
+	} 
+	else {
+		return 1.0;
+	}
+}
+
+
+100000 first() {
+
+        sim.readFromPopulationFile("./burn_in.txt");
         
          //     Population grid setup/subpop creation
         metapopSide = 3;
@@ -49,8 +136,8 @@ mutationEffect(m2) {
         allIndividuals =        (sim.subpopulations.genomes);
 
         //      Inversion creation
-        inverted = sample(p1.genomes, 1); // Insert 1 homozygous copy into a random individual in the population
-        inverted.addNewDrawnMutation(m2, invStart);
+        inverted = sample(p1.genomes, 100); // Insert 100 homozygous copies in the population
+        inverted.addNewDrawnMutation(m2, INV_START);
 
         print("Individuals with inversion: " + asString(sum(subpops.individuals.countOfMutationsOfType(m2))));
 
@@ -72,6 +159,18 @@ mutationEffect(m2) {
 
 }
 
+100001:199999 early () {
+	if (sim.cycle % 1000 == 0) {
+		print("Individuals with inversion: " + asString(sum(sim.subpopulations.individuals.countOfMutationsOfType(m2))));
+		writeFile("./fitness.csv",paste(sim.cycle,"pop1",p1.cachedFitness(NULL),"\n"+sim.cycle,"pop2",p2.cachedFitness(NULL),"\n"+sim.cycle,"pop3",p3.cachedFitness(NULL),"\n"+sim.cycle,"pop4",p4.cachedFitness(NULL),"\n"+sim.cycle,"pop5",p5.cachedFitness(NULL),"\n"+sim.cycle,"pop6",p6.cachedFitness(NULL),"\n"+sim.cycle,"pop7",p7.cachedFitness(NULL),"\n"+sim.cycle,"pop8",p8.cachedFitness(NULL),"\n"+sim.cycle,"pop9",p9.cachedFitness(NULL)), append=T);
+	}
+}
+
+200000 late() {
+	sim.outputFull("./main.txt");
+	sim.simulationFinished(); 
+}
+
 recombination() {
 	gm1 = genome1.containsMarkerMutation(m2, INV_START);
 	gm2 = genome2.containsMarkerMutation(m2, INV_START);
@@ -79,8 +178,8 @@ recombination() {
 		// homozygote non-inverted
 		return F;
 	}
-	inInv = (breakpoints > INV_START) & (breakpoints <= INV_END);
-	if (sum(inInv) % 2 == 0) {
+	IN_INV = (breakpoints > INV_START) & (breakpoints <= INV_END);
+	if (sum(IN_INV) % 2 == 0) {
 		return F;
 	}
 	if (gm1 & gm2) {
