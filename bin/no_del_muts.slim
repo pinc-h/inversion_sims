@@ -1,0 +1,217 @@
+// DOES NOT RUN
+
+// Amended from Recipe 14.4, Sept 30 2024
+// Alex Pinch
+
+initialize() {
+	defineConstant("L", 1000000);
+	defineConstant("FITMOD", 0.05);
+	defineConstant("INV_LENGTH", 500000);
+	defineConstant("INV_START", asInteger(L/2 - INV_LENGTH/2));
+	defineConstant("INV_END", INV_START + INV_LENGTH - 1);
+	defineConstant("N", 500);
+	
+
+	initializeMutationRate(1e-7);
+	// if dominance coefficient is = 0.5, then the fitness of the heterozygote is exactly intermediate between the two homozygotes
+	initializeMutationType("m1", 0.5, "f", 0.0);  // neutral sites
+	initializeMutationType("m2", 0.5, "f", 0.0);  // start marker
+	initializeMutationType("m3", 0.5, "f", 0.0);  // end marker
+	c(m2,m3).convertToSubstitution = T;
+	c(m2,m3).color = "red";
+	
+	initializeGenomicElementType("g1", m1, 1.0);
+	initializeGenomicElement(g1, 0, L-1);
+	initializeRecombinationRate(1e-8);
+
+}
+
+/* fitnessEffect(p1) {
+	if (homozygous==F)
+		return 1.0 + (f + FITMOD) * 0.2;
+	else
+		return 1.0 - (f - 0.5) * 0.2;
+} */
+
+fitnessEffect(p1) {
+	is_inverted = F;
+	if (individual.genome1.countOfMutationsOfType(m2) |individual.genome2.countOfMutationsOfType(m2))
+		is_inverted=T;
+	else
+		is_inverted=F;
+
+	if (is_inverted == T) {
+		return 1.0 + (FITMOD);
+	} 
+	else {
+		return 1.0;
+	}
+}
+
+fitnessEffect(p2) {
+	is_inverted = F;
+	if (individual.genome1.countOfMutationsOfType(m2) |individual.genome2.countOfMutationsOfType(m2))
+		is_inverted=T;
+	else
+		is_inverted=F;
+
+	if (is_inverted == T) {
+		return 1.0 + (FITMOD);
+	} 
+	else {
+		return 1.0;
+	}
+}
+
+fitnessEffect(p3) {
+	is_inverted = F;
+	if (individual.genome1.countOfMutationsOfType(m2) |individual.genome2.countOfMutationsOfType(m2))
+		is_inverted=T;
+	else
+		is_inverted=F;
+
+	if (is_inverted == T) {
+		return 1.0 + (FITMOD);
+	} 
+	else {
+		return 1.0;
+	}
+}
+
+fitnessEffect(p7) {
+	is_inverted = F;
+	if (individual.genome1.countOfMutationsOfType(m2) |individual.genome2.countOfMutationsOfType(m2))
+		is_inverted=T;
+	else
+		is_inverted=F;
+
+	if (is_inverted == T) {
+		return 1.0 - (FITMOD);
+	} 
+	else {
+		return 1.0;
+	}
+}
+
+fitnessEffect(p8) {
+	is_inverted = F;
+	if (individual.genome1.countOfMutationsOfType(m2) |individual.genome2.countOfMutationsOfType(m2))
+		is_inverted=T;
+	else
+		is_inverted=F;
+
+	if (is_inverted == T) {
+		return 1.0 - (FITMOD);
+	} 
+	else {
+		return 1.0;
+	}
+}
+
+fitnessEffect(p9) {
+	is_inverted = F;
+	if (individual.genome1.countOfMutationsOfType(m2) |individual.genome2.countOfMutationsOfType(m2))
+		is_inverted=T;
+	else
+		is_inverted=F;
+
+	if (is_inverted == T) {
+		return 1.0 - (FITMOD);
+	} 
+	else {
+		return 1.0;
+	}
+}
+
+
+100000 first() {
+
+        sim.readFromPopulationFile("./burn_in.txt");
+        
+         //     Population grid setup/subpop creation
+        metapopSide = 3;
+        metapopSize = metapopSide * metapopSide;
+
+        subpops = sim.subpopulations;
+        allIndividuals =        (sim.subpopulations.genomes);
+
+        //      Inversion creation
+        inverted = sample(p1.genomes, 100); // Insert 100 homozygous copies in the population
+        inverted.addNewDrawnMutation(m2, INV_START);
+
+        print("Individuals with inversion: " + asString(sum(subpops.individuals.countOfMutationsOfType(m2))));
+
+		  //      Migration
+        for (x in 1:metapopSide) // Arranging migration rates across the grid using x and y pointers
+                for (y in 1:metapopSide)
+                {
+                        destID = (x - 1) + (y - 1) * metapopSide + 1;
+                        destSubpop = subpops[destID - 1];
+                        if (x > 1)   // Left to right migration
+                                destSubpop.setMigrationRates(destID - 1, 0.01);
+                        if (x < metapopSide)   // Right to left migration
+                                destSubpop.setMigrationRates(destID + 1, 0.01);
+                        if (y > 1)   // Top to bottom migration
+                                destSubpop.setMigrationRates(destID - metapopSide, 0.01);
+                        if (y < metapopSide)   // Bottom to top migration
+                                destSubpop.setMigrationRates(destID + metapopSide, 0.01);
+                }
+
+}
+
+100001:199999 early () {
+	if (sim.cycle % 1000 == 0) {
+		print("Individuals with inversion: " + asString(sum(sim.subpopulations.individuals.countOfMutationsOfType(m2))));
+		writeFile("./fitness.csv",paste(sim.cycle,"pop1",p1.cachedFitness(NULL),"\n"+sim.cycle,"pop2",p2.cachedFitness(NULL),"\n"+sim.cycle,"pop3",p3.cachedFitness(NULL),"\n"+sim.cycle,"pop4",p4.cachedFitness(NULL),"\n"+sim.cycle,"pop5",p5.cachedFitness(NULL),"\n"+sim.cycle,"pop6",p6.cachedFitness(NULL),"\n"+sim.cycle,"pop7",p7.cachedFitness(NULL),"\n"+sim.cycle,"pop8",p8.cachedFitness(NULL),"\n"+sim.cycle,"pop9",p9.cachedFitness(NULL)), append=T);
+	}
+}
+
+200000 late() {
+	sim.outputFull("./main.txt");
+	sim.simulationFinished(); 
+}
+
+recombination() {
+	gm1 = genome1.containsMarkerMutation(m2, INV_START);
+	gm2 = genome2.containsMarkerMutation(m2, INV_START);
+	if (!(gm1 | gm2)) {
+		// homozygote non-inverted
+		return F;
+	}
+	IN_INV = (breakpoints > INV_START) & (breakpoints <= INV_END);
+	if (sum(IN_INV) % 2 == 0) {
+		return F;
+	}
+	if (gm1 & gm2) {
+		// homozygote inverted
+		left = (breakpoints == INV_START);
+		right = (breakpoints == INV_END + 1);
+		breakpoints = sort(c(breakpoints[!(left | right)],
+			c(INV_START, INV_END + 1)[c(sum(left) == 0, sum(right) == 0)]));
+		return T;
+	} else {
+		// heterozygote inverted: resample to get an even number of breakpoints
+		// this is *recursive*: it calls this recombination callback again!
+		breakpoints = sim.chromosome.drawBreakpoints(individual);
+	}
+	return T;
+}
+
+
+/* HOW OUTPUT WORKED IN THE OLD
+
+total_del_muts=sum(sim.subpopulations.individuals.countOfMutationsOfType(m4))+sum(sim.subpopulations.individuals.countOfMutationsOfType(m5))+sum(sim.subpopulations.individuals.countOfMutationsOfType(m6));
+
+	if (sim.generation % 1000 == 0) {
+		print("Main running, Generation " + asString(sim.generation));
+		print("Individuals with inversion: " + asString(sum(sim.subpopulations.individuals.countOfMutationsOfType(m2))));
+		print("Total deleterious mutations: " + asString(total_del_muts));
+		
+		writeFile("./genotypes.csv",paste(sim.generation,"pop1",p1.individuals.countOfMutationsOfType(m2),"\n"+sim.generation,"pop2",p2.individuals.countOfMutationsOfType(m2),"\n"+sim.generation,"pop3",p3.individuals.countOfMutationsOfType(m2),"\n"+sim.generation,"pop4",p4.individuals.countOfMutationsOfType(m2),"\n"+sim.generation,"pop5",p5.individuals.countOfMutationsOfType(m2),"\n"+sim.generation,"pop6",p6.individuals.countOfMutationsOfType(m2),"\n"+sim.generation,"pop7",p7.individuals.countOfMutationsOfType(m2),"\n"+sim.generation,"pop8",p8.individuals.countOfMutationsOfType(m2),"\n"+sim.generation,"pop9",p9.individuals.countOfMutationsOfType(m2)), append=T);
+		
+		writeFile("./fitness.csv",paste(sim.generation,"pop1",p1.cachedFitness(NULL),"\n"+sim.generation,"pop2",p2.cachedFitness(NULL),"\n"+sim.generation,"pop3",p3.cachedFitness(NULL),"\n"+sim.generation,"pop4",p4.cachedFitness(NULL),"\n"+sim.generation,"pop5",p5.cachedFitness(NULL),"\n"+sim.generation,"pop6",p6.cachedFitness(NULL),"\n"+sim.generation,"pop7",p7.cachedFitness(NULL),"\n"+sim.generation,"pop8",p8.cachedFitness(NULL),"\n"+sim.generation,"pop9",p9.cachedFitness(NULL)), append=T);
+	}	
+}
+
+
+*/
