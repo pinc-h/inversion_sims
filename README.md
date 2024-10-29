@@ -1,8 +1,7 @@
 # README  
-Clean-up changes (DO AFTER RUNNING ON SERVER TO GET DATA):  
-- [ ] Change writeFile to log add column cached fitness in both burn in and main model
-- [ ] Add the burn in to the main program
-- [ ] Save the burn in seed to the top of the burn in output file
+To-do:  
+- [ ] Change writeFile to find fitness of individuals homozygous for m2, or heterozygous for m2.
+- [ ] Log add column # of indiv. homozygous and heterozygous, fitness of m2 homozygous and heterozygous
 
 
 ## How to run the simulations (Methods)  

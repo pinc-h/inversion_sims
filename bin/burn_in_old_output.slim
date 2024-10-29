@@ -25,11 +25,15 @@ initialize() {
 }
 
 1 first(){
+
+//	Population grid setup/subpop creation
 	metapopSide = 3;
 	metapopSize = metapopSide * metapopSide;
 	for (i in 1:metapopSize)
 		sim.addSubpop(i, 500);
 	subpops = sim.subpopulations;
+	
+	writeFile("./burn_in_seed.txt", paste(getSeed()));
 
 //	Migration
 	for (x in 1:metapopSide) // Arranging migration rates across the grid using x and y pointers
@@ -46,27 +50,16 @@ initialize() {
 			if (y < metapopSide)   // Bottom to top migration
 				destSubpop.setMigrationRates(destID + metapopSide, 0.01);
 		}
-		
-		// set up a log file
-		log = community.createLogFile("sim_burn_in_log_"+ getSeed() + ".txt", sep="\t",
-		logInterval=1000);
-		log.addCycle();
-		log.addPopulationSize();
-		log.addCustomColumn("upper_region_fitness",
-		"(sum(c(p1.cachedFitness(NULL),p2.cachedFitness(NULL),p3.cachedFitness(NULL)))/1500);");
-		log.addCustomColumn("lower_region_fitness",
-		"(sum(c(p7.cachedFitness(NULL),p8.cachedFitness(NULL),p9.cachedFitness(NULL)))/1500);");
-		log.addCustomColumn("calcFST","calcFST(c(p1.genomes, p2.genomes, p3.genomes),c(p7.genomes, p8.genomes, p9.genomes));");
-		
 }
 
 1:99999 early () {
-	if (sim.cycle % 1000 == 0) {
-	cat(calcFST(c(p1.genomes, p2.genomes, p3.genomes),c(p7.genomes, p8.genomes, p9.genomes)));
-	}
+if (sim.cycle % 1000 == 0) {
+writeFile("./burn_in_fitness.csv",paste(sim.cycle,"pop1",p1.cachedFitness(NULL),"\n"+sim.cycle,"pop2",p2.cachedFitness(NULL),"\n"+sim.cycle,"pop3",p3.cachedFitness(NULL),"\n"+sim.cycle,"pop4",p4.cachedFitness(NULL),"\n"+sim.cycle,"pop5",p5.cachedFitness(NULL),"\n"+sim.cycle,"pop6",p6.cachedFitness(NULL),"\n"+sim.cycle,"pop7",p7.cachedFitness(NULL),"\n"+sim.cycle,"pop8",p8.cachedFitness(NULL),"\n"+sim.cycle,"pop9",p9.cachedFitness(NULL)), append=T);
+}	
+
 }
 
 100000 late() {
-	sim.outputFull("./burn_in.txt"); 
+	sim.outputFull("./burn_in.txt");
+	sim.simulationFinished(); 
 }
-
