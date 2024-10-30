@@ -1,13 +1,12 @@
 # README  
 To-do:  
-- [ ] Change writeFile to find fitness of individuals homozygous for m2, or heterozygous for m2.
-- [ ] Log add column # of indiv. homozygous and heterozygous, fitness of m2 homozygous and heterozygous
+- [ ] Find and group indiv. homozygous and heterozygous for m2. Store fitness & count of other del muts
+- [ ] Log add column # of indiv. homozygous and heterozygous for m2, cached fitness of m2 homozygous and heterozygous
 
-
-## How to run the simulations (Methods)  
+## How to run the simulations 
 Run the shell scripts in numerical order. See the commented first line for usage. Most shell scripts call a SLiM file from `src/sims/`. Some additional SLiM scripts for unused scenarios can be found in `bin/sims/`.
 
-## Results from the simulations (Results)
+## Data analysis pipeline
 
 ## Interpreting results (Discussion)
 
