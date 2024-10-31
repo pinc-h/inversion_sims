@@ -147,22 +147,18 @@ fitnessEffect(p9) {
 		"(sum(c(p1.cachedFitness(NULL),p2.cachedFitness(NULL),p3.cachedFitness(NULL)))/1500);");
 		log.addCustomColumn("lower_region_total_fitness",
 		"(sum(c(p7.cachedFitness(NULL),p8.cachedFitness(NULL),p9.cachedFitness(NULL)))/1500);");
-		log.addCustomColumn("calcFST","calcFST(c(p1.genomes, p2.genomes, p3.genomes),c(p7.genomes, p8.genomes, p9.genomes));");
-		log.addCustomColumn("inverted_indiv","size(sim.subpopulations.genomes.countOfMutationsOfType(m2));");
-		log.addCustomColumn("total_del_muts","sum(sim.subpopulations.genomes.countOfMutationsOfType(m4))+sum(sim.subpopulations.genomes.countOfMutationsOfType(m5))+sum(sim.subpopulations.genomes.countOfMutationsOfType(m6));");
+		log.addCustomColumn("calcFST","calcFST(c(p1.genomes, p2.genomes, p3.genomes),c(p7.genomes, p8.genomes, p9.genomes));");	log.addCustomColumn("inverted_indiv","sum(sim.subpopulations.genomes.countOfMutationsOfType(m2));");	log.addCustomColumn("total_del_muts","sum(sim.subpopulations.genomes.countOfMutationsOfType(m4))+sum(sim.subpopulations.genomes.countOfMutationsOfType(m5))+sum(sim.subpopulations.genomes.countOfMutationsOfType(m6));");
         
          //     Population grid setup/subpop creation
         metapopSide = 3;
         metapopSize = metapopSide * metapopSide;
 
         subpops = sim.subpopulations;
-        allIndividuals =        (sim.subpopulations.genomes);
+        allIndividuals = (sim.subpopulations.genomes);
 
         //      Inversion creation
         inverted = sample(p1.genomes, 100); // Insert 100 homozygous copies in the population
         inverted.addNewDrawnMutation(m2, INV_START);
-
-        print("Individuals with inversion: " + asString(sum(subpops.individuals.countOfMutationsOfType(m2))));
 
 		  //      Migration
         for (x in 1:metapopSide) // Arranging migration rates across the grid using x and y pointers
@@ -183,7 +179,7 @@ fitnessEffect(p9) {
 }
 
 100001:199999 early () {
-	if (sim.cycle % 1000 == 0) {
+	if (sim.cycle % 1000 == 0) {	
 	
 	writeFile("./del_muts_fitness.csv",paste(sim.cycle,"pop1",p1.cachedFitness(NULL),"\n"+sim.cycle,"pop2",p2.cachedFitness(NULL),"\n"+sim.cycle,"pop3",p3.cachedFitness(NULL),"\n"+sim.cycle,"pop4",p4.cachedFitness(NULL),"\n"+sim.cycle,"pop5",p5.cachedFitness(NULL),"\n"+sim.cycle,"pop6",p6.cachedFitness(NULL),"\n"+sim.cycle,"pop7",p7.cachedFitness(NULL),"\n"+sim.cycle,"pop8",p8.cachedFitness(NULL),"\n"+sim.cycle,"pop9",p9.cachedFitness(NULL)), append=T);
 	
