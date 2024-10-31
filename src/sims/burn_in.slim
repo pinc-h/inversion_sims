@@ -60,12 +60,6 @@ initialize() {
 		
 }
 
-1:99999 early () {
-	if (sim.cycle % 1000 == 0) {
-	cat(calcFST(c(p1.genomes, p2.genomes, p3.genomes),c(p7.genomes, p8.genomes, p9.genomes)));
-	}
-}
-
 100000 late() {
 	sim.outputFull("./burn_in.txt"); 
 }
