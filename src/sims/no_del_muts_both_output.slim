@@ -1,0 +1,216 @@
+/* Runs! Produces a log file and the older output style
+Oct. 30 2024
+A. Pinch
+
+
+*/
+
+
+initialize() {
+	defineConstant("L", 1000000);
+	defineConstant("FITMOD", 0.05);
+	defineConstant("INV_LENGTH", 500000);
+	defineConstant("INV_START", asInteger(L/2 - INV_LENGTH/2));
+	defineConstant("INV_END", INV_START + INV_LENGTH - 1);
+	defineConstant("N", 500);
+	
+
+	initializeMutationRate(1e-7);
+	// if dominance coefficient is = 0.5, then the fitness of the heterozygote is exactly intermediate between the two homozygotes
+	initializeMutationType("m1", 0.5, "f", 0.0);  // neutral sites
+	initializeMutationType("m2", 0.5, "f", 0.0);  // start marker
+	initializeMutationType("m3", 0.5, "f", 0.0);  // end marker
+	
+	c(m2,m3).convertToSubstitution = T;
+	c(m2,m3).color = "red";
+	
+	initializeGenomicElementType("g1", c(m1), c(0.25));
+	initializeGenomicElement(g1, 0, L-1);
+	initializeRecombinationRate(1e-8);
+		
+}
+
+/* fitnessEffect(p1) {
+	if (homozygous==F)
+		return 1.0 + (f + FITMOD) * 0.2;
+	else
+		return 1.0 - (f - 0.5) * 0.2;
+} */
+
+fitnessEffect(p1) {
+	is_inverted = F;
+	if (individual.genome1.countOfMutationsOfType(m2) |individual.genome2.countOfMutationsOfType(m2))
+		is_inverted=T;
+	else
+		is_inverted=F;
+
+	if (is_inverted == T) {
+		return 1.0 + (FITMOD);
+	} 
+	else {
+		return 1.0;
+	}
+}
+
+fitnessEffect(p2) {
+	is_inverted = F;
+	if (individual.genome1.countOfMutationsOfType(m2) |individual.genome2.countOfMutationsOfType(m2))
+		is_inverted=T;
+	else
+		is_inverted=F;
+
+	if (is_inverted == T) {
+		return 1.0 + (FITMOD);
+	} 
+	else {
+		return 1.0;
+	}
+}
+
+fitnessEffect(p3) {
+	is_inverted = F;
+	if (individual.genome1.countOfMutationsOfType(m2) |individual.genome2.countOfMutationsOfType(m2))
+		is_inverted=T;
+	else
+		is_inverted=F;
+
+	if (is_inverted == T) {
+		return 1.0 + (FITMOD);
+	} 
+	else {
+		return 1.0;
+	}
+}
+
+fitnessEffect(p7) {
+	is_inverted = F;
+	if (individual.genome1.countOfMutationsOfType(m2) |individual.genome2.countOfMutationsOfType(m2))
+		is_inverted=T;
+	else
+		is_inverted=F;
+
+	if (is_inverted == T) {
+		return 1.0 - (FITMOD);
+	} 
+	else {
+		return 1.0;
+	}
+}
+
+fitnessEffect(p8) {
+	is_inverted = F;
+	if (individual.genome1.countOfMutationsOfType(m2) |individual.genome2.countOfMutationsOfType(m2))
+		is_inverted=T;
+	else
+		is_inverted=F;
+
+	if (is_inverted == T) {
+		return 1.0 - (FITMOD);
+	} 
+	else {
+		return 1.0;
+	}
+}
+
+fitnessEffect(p9) {
+	is_inverted = F;
+	if (individual.genome1.countOfMutationsOfType(m2) |individual.genome2.countOfMutationsOfType(m2))
+		is_inverted=T;
+	else
+		is_inverted=F;
+
+	if (is_inverted == T) {
+		return 1.0 - (FITMOD);
+	} 
+	else {
+		return 1.0;
+	}
+}
+
+
+100000 first() {
+
+       sim.readFromPopulationFile("./burn_in.txt");
+      
+      inv_counts = sim.subpopulations.genomes.countOfMutationsOfType(m2);
+        
+        	// set up a log file
+		log = community.createLogFile("sim_del_muts_log_"+ getSeed() + ".txt", sep="\t",
+		logInterval=1000);
+		log.addCycle();
+		log.addPopulationSize();
+		log.addCustomColumn("upper_region_total_fitness",
+		"(sum(c(p1.cachedFitness(NULL),p2.cachedFitness(NULL),p3.cachedFitness(NULL)))/1500);");
+		log.addCustomColumn("lower_region_total_fitness",
+		"(sum(c(p7.cachedFitness(NULL),p8.cachedFitness(NULL),p9.cachedFitness(NULL)))/1500);");
+		log.addCustomColumn("calcFST","calcFST(c(p1.genomes, p2.genomes, p3.genomes),c(p7.genomes, p8.genomes, p9.genomes));");	log.addCustomColumn("inverted_indiv","sum(sim.subpopulations.genomes.countOfMutationsOfType(m2));");	
+        
+         //     Population grid setup/subpop creation
+        metapopSide = 3;
+        metapopSize = metapopSide * metapopSide;
+
+        subpops = sim.subpopulations;
+        allIndividuals = (sim.subpopulations.genomes);
+
+        //      Inversion creation
+        inverted = sample(p1.genomes, 100); // Insert 100 homozygous copies in the population
+        inverted.addNewDrawnMutation(m2, INV_START);
+
+		  //      Migration
+        for (x in 1:metapopSide) // Arranging migration rates across the grid using x and y pointers
+                for (y in 1:metapopSide)
+                {
+                        destID = (x - 1) + (y - 1) * metapopSide + 1;
+                        destSubpop = subpops[destID - 1];
+                        if (x > 1)   // Left to right migration
+                                destSubpop.setMigrationRates(destID - 1, 0.01);
+                        if (x < metapopSide)   // Right to left migration
+                                destSubpop.setMigrationRates(destID + 1, 0.01);
+                        if (y > 1)   // Top to bottom migration
+                                destSubpop.setMigrationRates(destID - metapopSide, 0.01);
+                        if (y < metapopSide)   // Bottom to top migration
+                                destSubpop.setMigrationRates(destID + metapopSide, 0.01);
+                }
+
+}
+
+100001:199999 early () {
+	if (sim.cycle % 1000 == 0) {	
+	
+	writeFile("./del_muts_fitness.csv",paste(sim.cycle,"pop1",p1.cachedFitness(NULL),"\n"+sim.cycle,"pop2",p2.cachedFitness(NULL),"\n"+sim.cycle,"pop3",p3.cachedFitness(NULL),"\n"+sim.cycle,"pop4",p4.cachedFitness(NULL),"\n"+sim.cycle,"pop5",p5.cachedFitness(NULL),"\n"+sim.cycle,"pop6",p6.cachedFitness(NULL),"\n"+sim.cycle,"pop7",p7.cachedFitness(NULL),"\n"+sim.cycle,"pop8",p8.cachedFitness(NULL),"\n"+sim.cycle,"pop9",p9.cachedFitness(NULL)), append=T);
+	
+	writeFile("./genotypes.csv",paste(sim.cycle,"pop1",p1.individuals.countOfMutationsOfType(m2),"\n"+sim.cycle,"pop2",p2.individuals.countOfMutationsOfType(m2),"\n"+sim.cycle,"pop3",p3.individuals.countOfMutationsOfType(m2),"\n"+sim.cycle,"pop4",p4.individuals.countOfMutationsOfType(m2),"\n"+sim.cycle,"pop5",p5.individuals.countOfMutationsOfType(m2),"\n"+sim.cycle,"pop6",p6.individuals.countOfMutationsOfType(m2),"\n"+sim.cycle,"pop7",p7.individuals.countOfMutationsOfType(m2),"\n"+sim.cycle,"pop8",p8.individuals.countOfMutationsOfType(m2),"\n"+sim.cycle,"pop9",p9.individuals.countOfMutationsOfType(m2)), append=T);
+      
+   }
+
+}
+
+200000 late() {
+	sim.simulationFinished(); 
+}
+
+recombination() {
+	gm1 = genome1.containsMarkerMutation(m2, INV_START);
+	gm2 = genome2.containsMarkerMutation(m2, INV_START);
+	if (!(gm1 | gm2)) {
+		// homozygote non-inverted
+		return F;
+	}
+	IN_INV = (breakpoints > INV_START) & (breakpoints <= INV_END);
+	if (sum(IN_INV) % 2 == 0) {
+		return F;
+	}
+	if (gm1 & gm2) {
+		// homozygote inverted
+		left = (breakpoints == INV_START);
+		right = (breakpoints == INV_END + 1);
+		breakpoints = sort(c(breakpoints[!(left | right)],
+			c(INV_START, INV_END + 1)[c(sum(left) == 0, sum(right) == 0)]));
+		return T;
+	} else {
+		// heterozygote inverted: resample to get an even number of breakpoints
+		// this is *recursive*: it calls this recombination callback again!
+		breakpoints = sim.chromosome.drawBreakpoints(individual);
+	}
+	return T;
+}
