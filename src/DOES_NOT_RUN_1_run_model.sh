@@ -3,12 +3,12 @@
 
 
 #!/bin/bash
-# Usage: seq (insert_number_of_runs_here) | /usr/local/bin/parallel -j 2 bash run.sh
+# Usage: seq (insert_number_of_runs_here) | /usr/local/bin/parallel -j 2 bash 1_run_model.sh
 i=$1
 cd data
 mkdir ${i}
 cd ${i}
-/usr/local/bin/slim ../../main.slim
+/usr/local/bin/slim ../../INSERT_FILENAME.slim
 for file in *.*; do
 	mv ${file} ${i}_${file}
 done

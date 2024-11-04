@@ -177,9 +177,9 @@ fitnessEffect(p9) {
 100001:199999 early () {
 	if (sim.cycle % 1000 == 0) {	
 	
-	writeFile("./del_muts_fitness.csv",paste(sim.cycle,"pop1",p1.cachedFitness(NULL),"\n"+sim.cycle,"pop2",p2.cachedFitness(NULL),"\n"+sim.cycle,"pop3",p3.cachedFitness(NULL),"\n"+sim.cycle,"pop4",p4.cachedFitness(NULL),"\n"+sim.cycle,"pop5",p5.cachedFitness(NULL),"\n"+sim.cycle,"pop6",p6.cachedFitness(NULL),"\n"+sim.cycle,"pop7",p7.cachedFitness(NULL),"\n"+sim.cycle,"pop8",p8.cachedFitness(NULL),"\n"+sim.cycle,"pop9",p9.cachedFitness(NULL)), append=T);
+	writeFile("./no_del_muts_fitness_"+ getSeed() + ".csv",paste(sim.cycle,"pop1",p1.cachedFitness(NULL),"\n"+sim.cycle,"pop2",p2.cachedFitness(NULL),"\n"+sim.cycle,"pop3",p3.cachedFitness(NULL),"\n"+sim.cycle,"pop4",p4.cachedFitness(NULL),"\n"+sim.cycle,"pop5",p5.cachedFitness(NULL),"\n"+sim.cycle,"pop6",p6.cachedFitness(NULL),"\n"+sim.cycle,"pop7",p7.cachedFitness(NULL),"\n"+sim.cycle,"pop8",p8.cachedFitness(NULL),"\n"+sim.cycle,"pop9",p9.cachedFitness(NULL)), append=T);
 	
-	writeFile("./genotypes.csv",paste(sim.cycle,"pop1",p1.individuals.countOfMutationsOfType(m2),"\n"+sim.cycle,"pop2",p2.individuals.countOfMutationsOfType(m2),"\n"+sim.cycle,"pop3",p3.individuals.countOfMutationsOfType(m2),"\n"+sim.cycle,"pop4",p4.individuals.countOfMutationsOfType(m2),"\n"+sim.cycle,"pop5",p5.individuals.countOfMutationsOfType(m2),"\n"+sim.cycle,"pop6",p6.individuals.countOfMutationsOfType(m2),"\n"+sim.cycle,"pop7",p7.individuals.countOfMutationsOfType(m2),"\n"+sim.cycle,"pop8",p8.individuals.countOfMutationsOfType(m2),"\n"+sim.cycle,"pop9",p9.individuals.countOfMutationsOfType(m2)), append=T);
+	writeFile("./no_del_muts_genotypes_"+ getSeed()+".csv",paste(sim.cycle,"pop1",p1.individuals.countOfMutationsOfType(m2),"\n"+sim.cycle,"pop2",p2.individuals.countOfMutationsOfType(m2),"\n"+sim.cycle,"pop3",p3.individuals.countOfMutationsOfType(m2),"\n"+sim.cycle,"pop4",p4.individuals.countOfMutationsOfType(m2),"\n"+sim.cycle,"pop5",p5.individuals.countOfMutationsOfType(m2),"\n"+sim.cycle,"pop6",p6.individuals.countOfMutationsOfType(m2),"\n"+sim.cycle,"pop7",p7.individuals.countOfMutationsOfType(m2),"\n"+sim.cycle,"pop8",p8.individuals.countOfMutationsOfType(m2),"\n"+sim.cycle,"pop9",p9.individuals.countOfMutationsOfType(m2)), append=T);
       
    }
 
