@@ -38,7 +38,7 @@ no_del_muts %>%
   theme(text = element_text(size = 20))
 
 frequency <- del_muts %>%
-  filter(!is.na(inv_genotype)) %>%
+  filter(!is.na(inv_genotype), gen==101000) %>%
   group_by(pop, inv_genotype) %>%
   summarise(count = n(), .groups = "drop") %>%
   mutate(frequency = count / 500)
