@@ -36,4 +36,17 @@ no_del_muts %>%
   labs(x = "Genotype", y = "Fitness", title = "no del muts, gen 199,000") +
   scale_color_discrete(name = "Inversion Genotype") + 
   theme(text = element_text(size = 20))
+
+frequency <- del_muts %>%
+  filter(!is.na(inv_genotype)) %>%
+  group_by(pop, inv_genotype) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  mutate(frequency = count / 500)
+
+frequency %>%
+  ggplot(.,aes(x=as.factor(inv_genotype),y=frequency,group=inv_genotype,fill=as.factor(inv_genotype))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Genotype", y = "Frequency", title = "no del muts") +
+  scale_color_discrete(name = "Inversion Genotype") + 
+  theme(text = element_text(size = 20))
   
