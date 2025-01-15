@@ -63,17 +63,6 @@ del_muts <- del_muts_fit %>%
 # no_del_muts <- no_del_muts_fit %>%
 #   inner_join(no_del_muts_genotypes)
 
-del_muts %>%
-  filter(!is.na(genotypes), gen==101000, fitness > 0.08) %>%
-  group_by(pop, genotypes) %>%
-  summarize(mean_fit = mean(fitness,na.rm=T)) %>%
-  ggplot(.,aes(x=as.factor(genotypes),y=mean_fit,group=genotypes,color=as.factor(genotypes))) +
-  geom_boxplot() + geom_jitter(width = 0.2) + facet_wrap(~pop) +
-  labs(x = "Genotype", y = "Fitness", title = "del muts, gen 199,000") +
-  scale_color_discrete(name = "Inversion Genotype") + 
-  theme(text = element_text(size = 20)) +
-  ylim(0.8,1.1)
-
 frequency <- del_muts %>%
   filter(!is.na(genotypes), gen==199000) %>%
   group_by(pop, genotypes) %>%
@@ -82,10 +71,22 @@ frequency <- del_muts %>%
 frequency %>%
   ggplot(.,aes(x=as.factor(genotypes),y=count,group=genotypes,fill=as.factor(genotypes))) +
   geom_bar(stat = "identity", position = "dodge") +
-  labs(x = "Genotype", y = "Number", title = "del muts") +
-  scale_color_discrete(name = "Inversion Genotype") + 
+  labs(x = "Genotype", y = "Total count", title = "Individual counts at 199,000 generations") +
+  scale_fill_discrete(name = "Inversion Genotype", labels = c("Non-inverted", "Heterozygous", "Homozygous")) + 
   theme(text = element_text(size = 20)) +
   ylim(0,40000)
+
+# Fitness
+del_muts %>%
+  filter(!is.na(genotypes), gen==101000, fitness > 0.08) %>%
+  group_by(pop, genotypes) %>%
+  summarize(mean_fit = mean(fitness,na.rm=T)) %>%
+  ggplot(.,aes(x=as.factor(genotypes),y=mean_fit,group=genotypes,color=as.factor(genotypes))) +
+  geom_boxplot() + geom_jitter(width = 0.2) + facet_wrap(~pop) +
+  labs(x = "Genotype", y = "Fitness", title = "Fitness, gen. 101,000") +
+  scale_color_discrete(name = "Inversion Genotype") + 
+  theme(text = element_text(size = 20)) +
+  ylim(0.8,1.1)
 
 # "Deleterial load"
 # This removes the strict fitness changes coded in the SLiM model, this way we can assess fitness changes to look for build-up of deleterious mutations
@@ -99,7 +100,7 @@ del_muts <- del_muts %>% mutate(del_load = case_when(fixed_fitness > 0.5 ~ 1 - f
 
 
 del_muts %>%
-  filter(!is.na(genotypes), gen==103000, del_load < 0.5) %>% # Change gen=1e5 to compare to last generation
+  filter(!is.na(genotypes), gen==103000) %>% # Change gen=1e5 to compare to last generation
   group_by(seed, pop, del_load, genotypes) %>%
   summarize(mean_load = mean(del_load,na.rm=T)) %>%
   group_by(seed, genotypes) %>%
@@ -108,9 +109,9 @@ del_muts %>%
          mean_seed_load = quantile(mean_load, 0.9)) %>%  ## 0.5 = median
   ggplot(.,aes(x=as.factor(genotypes),y=mean_seed_load,group=genotypes,color=as.factor(genotypes))) +
   geom_boxplot() + geom_jitter(width = 0.2) +
-  labs(x = "Genotype", y = "Deleterial load", title="generation 103,000") +
-  scale_color_discrete(name = "Inversion Genotype") + 
-  ylim(0, 0.3) +
+  labs(x = "Genotype", y = "Deleterial load", title="Deleterial load accumulation at 103,000 generations") +
+  scale_fill_discrete(name = "Inversion Genotype", labels = c("Non-inverted", "Heterozygous", "Homozygous")) + 
+  ylim(0, 0.45) +
   theme(text = element_text(size = 20)) 
   
   
