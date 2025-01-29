@@ -102,6 +102,7 @@ del_muts <- del_muts %>% mutate(del_load = case_when(fixed_fitness > 0.5 ~ 1 - f
 del_muts <- del_muts %>% mutate(fixed_fitness = case_when(genotypes == 2 ~ fitness - 0.025,
                                                           genotypes == 1 ~ fitness - 0.05,
                                                           TRUE ~ fitness))
+
 del_muts <- del_muts %>% mutate(del_load = case_when(fixed_fitness > 0.5 ~ 1 - fixed_fitness,
                                                      TRUE ~ fitness))
 
@@ -124,3 +125,70 @@ del_muts %>%
 # Looking at some odd rows in the od dataset
 weird_rows <- subset(del_muts, del_load > 0.2 & gen == 103000)
 print(weird_rows)
+
+# -------------
+# tiny_inversion data loading
+lib_dir <- "/Users/alexpinch/GitHub/private/inversion_model/lib/250128"
+tiny_fit <- list.files(path = lib_dir, pattern = "tiny_inversion_fitness_.*\\.csv", full.names = TRUE) %>%
+  map_df(~ {
+    file_name <- basename(.x)  # Get the file name without the path
+    seed <- gsub(".*tiny_inversion_fitness_(\\d+).*", "\\1", file_name)  # Extract the seed number
+    read_delim(.x, col_names = FALSE) %>%
+      rename(gen = X1, pop = X2) %>%
+      pivot_longer(cols = -c(gen, pop), names_to = "sample", values_to = "fitness") %>%
+      mutate(seed = seed) 
+  })
+tiny_genotype <- list.files(path = lib_dir, pattern = "tiny_inversion_genotypes_.*\\.csv", full.names = TRUE) %>%
+  map_df(~ {
+    file_name <- basename(.x)  # Get the file name without the path
+    seed <- gsub(".*tiny_inversion_genotypes_(\\d+).*", "\\1", file_name)  # Extract the seed number
+    read_delim(.x, col_names = FALSE) %>%
+      rename(gen = X1, pop = X2) %>%
+      pivot_longer(cols = -c(gen, pop), names_to = "sample", values_to = "genotypes") %>%
+      mutate(seed = seed) 
+  })
+tiny_fit <- tiny_fit %>%
+  mutate(sample = paste0(gsub("\\D", "", pop), "_", sample))
+tiny_genotype <- tiny_genotype %>%
+  mutate(sample = paste0(gsub("\\D", "", pop), "_", sample))
+
+tiny <- tiny_fit %>%
+  inner_join(tiny_genotype, by = c("gen", "pop", "sample", "seed"))
+
+tiny_frequency <- tiny %>%
+  filter(!is.na(genotypes), gen==199000) %>%
+  group_by(pop, genotypes) %>%
+  summarise(count = n(), .groups = "drop")
+
+tiny_frequency %>%
+  ggplot(.,aes(x=as.factor(genotypes),y=count,group=genotypes,fill=as.factor(genotypes))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Genotype", y = "Total count", title = "Individual counts at 199,000 generations") +
+  scale_fill_discrete(name = "Inversion Genotype", labels = c("Non-inverted", "Heterozygous", "Homozygous")) + 
+  theme(text = element_text(size = 20)) +
+  ylim(0,25000)
+
+tiny <- tiny %>% mutate(fixed_fitness = case_when(genotypes == 2 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.05,
+                                                          genotypes == 2 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.05,
+                                                          genotypes == 1 & pop %in% c("pop1","pop2","pop4") ~ fitness - 0.025,
+                                                          genotypes == 1 & pop %in% c("pop6","pop8","pop9") ~ fitness + 0.025,
+                                                          TRUE ~ fitness))
+tiny <- tiny %>% mutate(del_load = case_when(fixed_fitness > 0.5 ~ 1 - fixed_fitness,
+                                                     TRUE ~ fitness))
+tiny %>%
+  filter(!is.na(genotypes), gen==150000) %>% # Change gen=1e5 to compare to last generation
+  group_by(seed, pop, del_load, genotypes) %>%
+  summarize(mean_load = mean(del_load,na.rm=T)) %>%
+  group_by(seed, genotypes) %>%
+  mutate(qnt_90 = quantile(mean_load, 0.9),
+         qnt_10 = quantile(mean_load, 0.1),
+         mean_seed_load = quantile(mean_load, 0.9)) %>%  ## 0.5 = median
+  ggplot(.,aes(x=as.factor(genotypes),y=mean_seed_load,group=genotypes,color=as.factor(genotypes))) +
+  geom_boxplot() + geom_jitter(width = 0.2) +
+  labs(x = "Genotype", y = "Deleterial load", title="Deleterial load accumulation at 150,000 generations") +
+  scale_fill_discrete(name = "Inversion Genotype", labels = c("Non-inverted", "Heterozygous", "Homozygous")) + 
+  ylim(0, 0.45) +
+  theme(text = element_text(size = 20)) 
+
+
+
