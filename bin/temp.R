@@ -126,9 +126,24 @@ del_muts %>%
 weird_rows <- subset(del_muts, del_load > 0.2 & gen == 103000)
 print(weird_rows)
 
+
+
+
 # -------------
+# -------------
+# -------------
+# -------------
+# -------------
+# -------------
+# -------------
+# -------------
+# -------------
+
+
+
+
 # tiny_inversion data loading
-lib_dir <- "/Users/alexpinch/GitHub/private/inversion_model/lib/250128"
+lib_dir <- "/Users/alexpinch/GitHub/private/inversion_model/lib/250206"
 tiny_fit <- list.files(path = lib_dir, pattern = "tiny_inversion_fitness_.*\\.csv", full.names = TRUE) %>%
   map_df(~ {
     file_name <- basename(.x)  # Get the file name without the path
@@ -156,14 +171,14 @@ tiny <- tiny_fit %>%
   inner_join(tiny_genotype, by = c("gen", "pop", "sample", "seed"))
 
 tiny_frequency <- tiny %>%
-  filter(!is.na(genotypes), gen==199000) %>%
-  group_by(pop, genotypes) %>%
+  filter(!is.na(genotypes), gen==150000) %>%
+  group_by(pop, gen, genotypes) %>%
   summarise(count = n(), .groups = "drop")
 
 tiny_frequency %>%
   ggplot(.,aes(x=as.factor(genotypes),y=count,group=genotypes,fill=as.factor(genotypes))) +
   geom_bar(stat = "identity", position = "dodge") +
-  labs(x = "Genotype", y = "Total count", title = "Individual counts at 199,000 generations") +
+  labs(x = "Genotype", y = "Total count", title = "Individual counts at 150,000 generations") +
   scale_fill_discrete(name = "Inversion Genotype", labels = c("Non-inverted", "Heterozygous", "Homozygous")) + 
   theme(text = element_text(size = 20)) +
   ylim(0,25000)
@@ -176,7 +191,7 @@ tiny <- tiny %>% mutate(fixed_fitness = case_when(genotypes == 2 & pop %in% c("p
 tiny <- tiny %>% mutate(del_load = case_when(fixed_fitness > 0.5 ~ 1 - fixed_fitness,
                                                      TRUE ~ fitness))
 tiny %>%
-  filter(!is.na(genotypes), gen==150000) %>% # Change gen=1e5 to compare to last generation
+  filter(!is.na(genotypes), gen==103000) %>% # Change gen=1e5 to compare to last generation
   group_by(seed, pop, del_load, genotypes) %>%
   summarize(mean_load = mean(del_load,na.rm=T)) %>%
   group_by(seed, genotypes) %>%
@@ -185,10 +200,55 @@ tiny %>%
          mean_seed_load = quantile(mean_load, 0.9)) %>%  ## 0.5 = median
   ggplot(.,aes(x=as.factor(genotypes),y=mean_seed_load,group=genotypes,color=as.factor(genotypes))) +
   geom_boxplot() + geom_jitter(width = 0.2) +
-  labs(x = "Genotype", y = "Deleterial load", title="Deleterial load accumulation at 150,000 generations") +
+  labs(x = "Genotype", y = "Deleterial load", title="Deleterial load accumulation at 103,000 generations") +
   scale_fill_discrete(name = "Inversion Genotype", labels = c("Non-inverted", "Heterozygous", "Homozygous")) + 
   ylim(0, 0.45) +
   theme(text = element_text(size = 20)) 
 
+# For saving plots all at once (gives them odd crop, commented them out)
+# plots.dir.path <- list.files(tempdir(), pattern="rs-graphics", full.names = TRUE); 
+# plots.png.paths <- list.files(plots.dir.path, pattern=".png", full.names = TRUE)
+# file.copy(from=plots.png.paths, to="/Users/alexpinch/GitHub/private/inversion_model/lib/plots/tiny_inv")
+
+
+no_recomb_fit <- list.files(path = lib_dir, pattern = "no_recomb_del_muts_fitness_.*\\.csv", full.names = TRUE) %>%
+  map_df(~ {
+    file_name <- basename(.x)  # Get the file name without the path
+    seed <- gsub(".*no_recomb_del_muts_fitness_(\\d+).*", "\\1", file_name)  # Extract the seed number
+    read_delim(.x, col_names = FALSE) %>%
+      rename(gen = X1, pop = X2) %>%
+      pivot_longer(cols = -c(gen, pop), names_to = "sample", values_to = "fitness") %>%
+      mutate(seed = seed) 
+  })
+no_recomb_genotype <- list.files(path = lib_dir, pattern = "no_recomb_genotypes_.*\\.csv", full.names = TRUE) %>%
+  map_df(~ {
+    file_name <- basename(.x)  # Get the file name without the path
+    seed <- gsub(".*no_recomb_genotypes_(\\d+).*", "\\1", file_name)  # Extract the seed number
+    read_delim(.x, col_names = FALSE) %>%
+      rename(gen = X1, pop = X2) %>%
+      pivot_longer(cols = -c(gen, pop), names_to = "sample", values_to = "genotypes") %>%
+      mutate(seed = seed) 
+  })
+no_recomb_fit <- no_recomb_fit %>%
+  mutate(sample = paste0(gsub("\\D", "", pop), "_", sample))
+no_recomb_genotype <- no_recomb_genotype %>%
+  mutate(sample = paste0(gsub("\\D", "", pop), "_", sample))
+
+
+no_recomb <- no_recomb_fit %>%
+  inner_join(no_recomb_genotype, by = c("gen", "pop", "sample", "seed"))
+
+no_recomb_frequency <- no_recomb %>%
+  filter(!is.na(genotypes), gen==199000) %>%
+  group_by(pop, genotypes) %>%
+  summarise(count = n(), .groups = "drop")
+
+no_recomb_frequency %>%
+  ggplot(.,aes(x=as.factor(genotypes),y=count,group=genotypes,fill=as.factor(genotypes))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Genotype", y = "Total count", title = "Individual counts at 199,000 generations") +
+  scale_fill_discrete(name = "Inversion Genotype", labels = c("Non-inverted", "Heterozygous", "Homozygous")) + 
+  theme(text = element_text(size = 20))
+  #ylim(0,25000)
 
 
